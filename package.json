@@ -57,19 +57,11 @@
       "@oclif/plugin-help"
     ],
     "topics": {
-      "hello": {
-        "description": "Commands to say hello."
-      },
       "kratapps": {
-        "description": "description for kratapps",
+        "description": "Plugin by kratapps.com",
         "subtopics": {
           "remote": {
-            "description": "description for kratapps.remote",
-            "subtopics": {
-              "deploy": {
-                "description": "description for kratapps.remote.deploy"
-              }
-            }
+            "description": "Connected to remote services, like GitHub."
           }
         }
       }

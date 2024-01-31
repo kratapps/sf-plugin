@@ -1,10 +1,10 @@
 # summary
 
-Summary of a command.
+Deploy code from remote repository.
 
 # description
 
-More information about a command. Don't repeat the summary.
+Similar to "sf project deploy start" command, but allows to deploy the source from remote repository, like GitHub.
 
 # flags.target-org.summary
 
