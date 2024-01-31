@@ -83,8 +83,7 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
             const metadata = flags['metadata'];
             const token = flags['token'];
             let { name: projectDir } = dirSync();
-            // process.chdir(projectDir);
-            projectDir = '/var/folders/sj/tm61y04j49509klgs0k9yxch0000gn/T/tmp-99264-Nh50PMLPcUPh';
+            process.chdir(projectDir);
             fs.outputJSONSync(`${projectDir}/sfdx-project.json`, createSfdxProjectJsonData());
             const project = await SfProject.resolve(projectDir);
             this.log(`Downloading source from github.com/${repoOwner}/${repoName}${repoRef ? `:${repoRef}` : ''}`);
