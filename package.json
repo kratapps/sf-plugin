@@ -1,7 +1,7 @@
 {
   "name": "@kratapps/sf-plugin",
   "description": "kratapps.com",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "dependencies": {
     "@oclif/core": "^3.18.1",
     "@salesforce/apex-node": "^3.0.2",
@@ -77,7 +77,7 @@
     "docs": "sf-docs",
     "format": "wireit",
     "lint": "wireit",
-    "postinstall": "yarn husky install",
+    "install:husky": "yarn husky install",
     "postpack": "shx rm -f oclif.manifest.json oclif.lock",
     "prepack": "sf-prepack",
     "test": "wireit",
