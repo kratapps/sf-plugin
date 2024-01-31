@@ -63,6 +63,10 @@ API token.
 API token to the external service, e.g. GitHub API Token.
 Required for private repositories and to increase GitHub API request limit.
 
+# apiVersionMsgDetailed
+
+%s %s metadata to %s using the v%s %s API.
+
 # examples
 
 - <%= config.bin %> <%= command.id %>

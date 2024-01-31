@@ -3,7 +3,7 @@ import { join } from 'path';
 import { dirSync } from 'tmp';
 
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
-import { Messages, Org, SfError, SfProject } from '@salesforce/core';
+import { Lifecycle, Messages, Org, SfError, SfProject } from '@salesforce/core';
 import { isString, Optional, isArray, hasString } from '@salesforce/ts-types';
 import { rimraf } from 'rimraf';
 import {
@@ -17,6 +17,7 @@ import { ProjectJson } from '@salesforce/core/lib/sfProject.js';
 import { getTypeInfo, MetadataTypeInfo } from '../../../../utils/metadataTypeInfos.js';
 import { executeDeploy, resolveApi } from '../../../../plugin-deploy-retrieve/deploy.js';
 import { DeployProgress } from '../../../../plugin-deploy-retrieve/progressBar.js';
+import { DeployVersionData } from '@salesforce/source-deploy-retrieve';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('kratapps', 'remote.deploy.start');
@@ -24,6 +25,8 @@ const messages = Messages.loadMessages('kratapps', 'remote.deploy.start');
 export type KratappsRemoteDeployStartResult = {
     // path: string;
 };
+
+const exclusiveFlags = ['manifest', 'source-dir', 'metadata', 'metadata-dir'];
 
 export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteDeployStartResult> {
     public static readonly summary = messages.getMessage('summary');
@@ -56,14 +59,14 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
             description: messages.getMessage('flags.source-dir.description'),
             summary: messages.getMessage('flags.source-dir.summary'),
             multiple: true,
-            exactlyOne: ['metadata', 'source-dir']
+            exclusive: exclusiveFlags.filter((f) => f !== 'source-dir')
         }),
         metadata: Flags.string({
             char: 'm',
             description: messages.getMessage('flags.metadata.description'),
             summary: messages.getMessage('flags.metadata.summary'),
             multiple: true,
-            exactlyOne: ['metadata', 'source-dir']
+            exclusive: exclusiveFlags.filter((f) => f !== 'metadata')
         }),
         token: Flags.string({
             description: messages.getMessage('flags.token.description'),
@@ -86,7 +89,7 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
             process.chdir(projectDir);
             fs.outputJSONSync(`${projectDir}/sfdx-project.json`, createSfdxProjectJsonData());
             const project = await SfProject.resolve(projectDir);
-            this.log(`Downloading source from github.com/${repoOwner}/${repoName}${repoRef ? `:${repoRef}` : ''}`);
+            this.log(`Downloading source from github.com/${repoOwner}/${repoName}${repoRef ? `:${repoRef}` : '/'}`);
             if (sourceDirs?.length) {
                 await Promise.all(
                     sourceDirs.map((sourceDir) =>
@@ -118,7 +121,18 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
             } else {
                 throw new SfError('Nothing specified to deploy.');
             }
-            process.chdir(projectDir);
+            // eslint-disable-next-line @typescript-eslint/require-await
+            Lifecycle.getInstance().on('apiVersionDeploy', async (apiData: DeployVersionData) => {
+                this.log(
+                    messages.getMessage('apiVersionMsgDetailed', [
+                        'Deploying',
+                        flags['metadata-dir'] ? '<version specified in manifest>' : `v${apiData.manifestVersion}`,
+                        targetOrg.getUsername(),
+                        apiData.apiVersion,
+                        apiData.webService
+                    ])
+                );
+            });
             await this.deploy({
                 project,
                 targetOrg,
@@ -155,10 +169,8 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
                 api
             },
             this.config.bin,
-            // @ts-ignore
             project
         );
-        // this.log(getVersionMessage('Deploying', componentSet, api));
         if (!deploy.id) {
             throw new SfError('The deploy id is not available.');
         }
@@ -235,7 +247,7 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
                             (!it.info.parent || pathParts.includes(it.info.parent.directoryName))
                     );
                     if (mdt) {
-                        this.info(name);
+                        this.info(path);
                         return saveFileFromGithub(join(projectDir, 'src', path), downloadUrl, token);
                     }
                 }
@@ -247,9 +259,9 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
     }
 
     private async visitFileFromGithubToSave(projectDir: string, content: RepositoryContent, token: Optional<string>): Promise<void> {
-        const { type, path, name, url, download_url: downloadUrl } = content;
+        const { type, path, url, download_url: downloadUrl } = content;
         if (type === 'file' && downloadUrl) {
-            this.info(name);
+            this.info(path);
             return saveFileFromGithub(join(projectDir, 'src', path), downloadUrl, token);
         } else if (type === 'dir') {
             return this.saveFileFromGithubRecursive(projectDir, url, token);
