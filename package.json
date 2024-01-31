@@ -4,9 +4,11 @@
   "version": "1.0.0",
   "dependencies": {
     "@oclif/core": "^3.18.1",
+    "@salesforce/apex-node": "^3.0.2",
     "@salesforce/core": "^6.5.1",
-    "@salesforce/plugin-deploy-retrieve": "3.2.8",
     "@salesforce/sf-plugins-core": "^7.1.4",
+    "@salesforce/source-deploy-retrieve": "^10.3.0",
+    "@salesforce/source-tracking": "^5.1.9",
     "fs-extra": "^11.2.0",
     "jsforce": "^1.11.1",
     "node-fetch": "^3.3.2",
