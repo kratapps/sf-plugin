@@ -11,7 +11,7 @@ import { Progress } from '@salesforce/sf-plugins-core';
 import { SourceMemberPollingEvent } from '@salesforce/source-tracking';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const mdTransferMessages = Messages.loadMessages('kratapps', 'metadata.transfer');
+const mdTransferMessages = Messages.loadMessages('@kratapps/sf-plugin', 'metadata.transfer');
 
 const showBar = Boolean(
     process.env.TERM !== 'dumb' && process.stdin.isTTY && env.getBoolean(EnvironmentVariable.SF_USE_PROGRESS_BAR, true)

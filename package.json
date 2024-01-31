@@ -1,5 +1,5 @@
 {
-  "name": "kratapps",
+  "name": "@kratapps/sf-plugin",
   "description": "kratapps.com",
   "version": "1.0.0",
   "dependencies": {

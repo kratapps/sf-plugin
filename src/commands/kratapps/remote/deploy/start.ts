@@ -20,7 +20,7 @@ import { DeployProgress } from '../../../../plugin-deploy-retrieve/progressBar.j
 import { DeployVersionData } from '@salesforce/source-deploy-retrieve';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const messages = Messages.loadMessages('kratapps', 'remote.deploy.start');
+const messages = Messages.loadMessages('@kratapps/sf-plugin', 'remote.deploy.start');
 
 export type KratappsRemoteDeployStartResult = {
     // path: string;

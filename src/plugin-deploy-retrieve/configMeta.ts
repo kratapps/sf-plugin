@@ -9,7 +9,7 @@ import type { ConfigValue } from '@salesforce/core';
 import { Messages } from '@salesforce/core/lib/messages.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const messages = Messages.loadMessages('kratapps', 'config');
+const messages = Messages.loadMessages('@kratapps/sf-plugin', 'config');
 
 export enum ConfigVars {
     /**

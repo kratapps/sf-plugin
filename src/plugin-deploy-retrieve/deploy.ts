@@ -25,9 +25,9 @@ import { DeployCache } from './deployCache.js';
 import { writeManifest } from './manifestCache.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-export const cacheMessages = Messages.loadMessages('kratapps', 'cache');
+export const cacheMessages = Messages.loadMessages('@kratapps/sf-plugin', 'cache');
 
-const deployMessages = Messages.loadMessages('kratapps', 'deploy.metadata');
+const deployMessages = Messages.loadMessages('@kratapps/sf-plugin', 'deploy.metadata');
 
 export type DeployOptions = {
     api: API;

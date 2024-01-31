@@ -9,7 +9,7 @@ import { Messages } from '@salesforce/core';
 import { RequestStatus } from '@salesforce/source-deploy-retrieve';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const messages = Messages.loadMessages('kratapps', 'errorCodes');
+const messages = Messages.loadMessages('@kratapps/sf-plugin', 'errorCodes');
 
 export const DEPLOY_STATUS_CODES = new Map<RequestStatus, number>([
     [RequestStatus.Succeeded, 0],
