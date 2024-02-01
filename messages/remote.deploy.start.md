@@ -1,10 +1,10 @@
 # summary
 
-Deploy code from remote repository.
+Deploy code from a remote repository.
 
 # description
 
-Similar to "sf project deploy start" command, but allows to deploy the source from remote repository, like GitHub.
+Similar to the "sf project deploy start" command, but it allows deploying the source from a remote repository, such as GitHub.
 
 # flags.target-org.summary
 
@@ -20,7 +20,7 @@ Repository owner.
 
 # flags.repo-owner.description
 
-Repository owner.
+Repository owner, for example kratapps in github.com/kratapps/component-library.
 
 # flags.repo-name.summary
 
@@ -28,7 +28,7 @@ Repository name.
 
 # flags.repo-name.description
 
-Repository name.
+Repository owner, for example component-library in github.com/kratapps/component-library.
 
 # flags.repo-ref.summary
 
@@ -52,7 +52,7 @@ Metadata component name.
 
 # flags.metadata.description
 
-Metadata component names to deploy.
+Components to deploy.
 
 # flags.token.summary
 

@@ -1,7 +1,7 @@
 {
   "name": "@kratapps/sf-plugin",
   "description": "kratapps.com",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "dependencies": {
     "@oclif/core": "^3.18.1",
     "@salesforce/apex-node": "^3.0.2",
@@ -10,7 +10,6 @@
     "@salesforce/source-deploy-retrieve": "^10.3.0",
     "@salesforce/source-tracking": "^5.1.9",
     "fs-extra": "^11.2.0",
-    "jsforce": "^1.11.1",
     "node-fetch": "^3.3.2",
     "rimraf": "^5.0.5",
     "tmp": "^0.2.1"
