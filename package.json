@@ -1,7 +1,7 @@
 {
   "name": "@kratapps/sf-plugin",
   "description": "kratapps.com",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "dependencies": {
     "@oclif/core": "^3.18.1",
     "@salesforce/apex-node": "^3.0.2",
@@ -20,6 +20,8 @@
     "@salesforce/cli-plugins-testkit": "^5.1.8",
     "@salesforce/dev-scripts": "^8.3.0",
     "@types/fs-extra": "^11.0.4",
+    "@types/glob": "^8.1.0",
+    "@types/shelljs": "^0.8.15",
     "@types/tmp": "^0.2.6",
     "eslint-plugin-sf-plugin": "^1.17.2",
     "oclif": "^4.4.2",
@@ -93,7 +95,7 @@
       ]
     },
     "compile": {
-      "command": "tsc -p . --pretty --incremental",
+      "command": "tsc -p . --pretty --incremental ; cp -r messages lib/",
       "files": [
         "src/**/*.ts",
         "**/tsconfig.json",
