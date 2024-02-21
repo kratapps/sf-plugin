@@ -59,6 +59,9 @@
       "kratapps": {
         "description": "Plugin by kratapps.com",
         "subtopics": {
+          "apex": {
+            "description": "Apex related functions."
+          },
           "remote": {
             "description": "Connected to remote services, like GitHub."
           }
