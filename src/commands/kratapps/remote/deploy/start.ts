@@ -22,13 +22,13 @@ import { DeployVersionData } from '@salesforce/source-deploy-retrieve';
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@kratapps/sf-plugin', 'remote.deploy.start');
 
-export type KratappsRemoteDeployStartResult = {
+export type Result = {
     // path: string;
 };
 
 const exclusiveFlags = ['manifest', 'source-dir', 'metadata', 'metadata-dir'];
 
-export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteDeployStartResult> {
+export default class RemoteDeployStart extends SfCommand<Result> {
     public static readonly summary = messages.getMessage('summary');
     public static readonly description = messages.getMessage('description');
     public static readonly examples = messages.getMessages('examples');
@@ -74,10 +74,10 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
         })
     };
 
-    public async run(): Promise<KratappsRemoteDeployStartResult> {
+    public async run(): Promise<Result> {
         const startDir = process.cwd();
         try {
-            const { flags } = await this.parse(KratappsRemoteDeployStart);
+            const { flags } = await this.parse(RemoteDeployStart);
             const targetOrg = flags['target-org'];
             const repoOwner = flags['repo-owner'];
             const repoName = flags['repo-name'];

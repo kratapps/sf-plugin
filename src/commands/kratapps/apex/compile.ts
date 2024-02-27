@@ -5,11 +5,11 @@ import { compile } from '../../../utils/apexCompile.js';
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@kratapps/sf-plugin', 'apex.compile');
 
-export type KratappsApexCompileResult = {
+export type Result = {
     containerId: string;
 };
 
-export default class KratappsApexCompile extends SfCommand<KratappsApexCompileResult> {
+export default class KratappsApexCompile extends SfCommand<Result> {
     public static readonly summary = messages.getMessage('summary');
     public static readonly description = messages.getMessage('description');
     public static readonly examples = messages.getMessages('examples');
@@ -23,10 +23,10 @@ export default class KratappsApexCompile extends SfCommand<KratappsApexCompileRe
         })
     };
 
-    public async run(): Promise<KratappsApexCompileResult> {
+    public async run(): Promise<Result> {
         const { flags } = await this.parse(KratappsApexCompile);
         const targetOrg = flags['target-org'];
-        const { containerId } = await compile(targetOrg);
+        const { containerId } = await compile(targetOrg.getConnection('40.0'));
         return {
             containerId
         };

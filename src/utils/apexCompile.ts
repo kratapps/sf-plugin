@@ -1,6 +1,6 @@
-import { Org } from '@salesforce/core';
 import { Connection } from '@salesforce/core/lib/org/connection.js';
 import { SaveResult, QueryResult, SObjectRecord } from 'jsforce';
+import { queryAllTooling } from './salesforce.js';
 
 type MetadataContainer = {
     Id: string;
@@ -20,6 +20,14 @@ type CreateApexClassMemberResult = {
     success: boolean;
     totalFailed: number;
     ids: string[];
+};
+
+export type CompileOptions = {
+    apiVersion?: string;
+};
+
+export type CompileResult = {
+    containerId: string;
 };
 
 async function createCleanContainer(conn: Connection, containerName: string): Promise<string> {
@@ -90,18 +98,10 @@ async function createApexClassMember(
 
 async function compileClasses(conn: Connection, containerId: string, query: string, memberType: MemberType) {
     console.log(`Querying ${memberType === 'ApexClassMember' ? 'classes' : 'triggers'} to compile...`);
-    let ids = [];
-    let queryResult: QueryResult<MemberRecord> = await conn.tooling.query(query);
-    let createResult = await createApexClassMember(conn, containerId, queryResult.records, memberType);
-    ids.push(...createResult.ids);
-    console.log(`Compiled ${ids.length}/${queryResult.totalSize}...`);
-    while (!queryResult.done && queryResult.nextRecordsUrl) {
-        queryResult = (await conn.queryMore(queryResult.nextRecordsUrl)) as QueryResult<MemberRecord>;
-        await createApexClassMember(conn, containerId, queryResult.records, memberType);
-        ids.push(...createResult.ids);
-        console.log(`Compiled ${ids.length}/${queryResult.totalSize}...`);
-        // break;
-    }
+    await queryAllTooling<MemberRecord>(conn, query, async (result) => {
+        await createApexClassMember(conn, containerId, result.records, memberType);
+        console.log(`Compiled ${result.currentSize}/${result.totalSize}...`);
+    });
 }
 
 async function validate(conn: Connection, containerId: string) {
@@ -137,8 +137,7 @@ async function waitForValidationCompleted(conn: Connection, requestId: string): 
     });
 }
 
-export async function compile(org: Org) {
-    const conn = org.getConnection('40.0');
+export async function compile(conn: Connection, options?: CompileOptions): Promise<CompileResult> {
     const containerId = await createCleanContainer(conn, 'KratappsSymbolTableSnapshot');
     const query =
         "SELECT Id, Body FROM ApexClass WHERE NamespacePrefix = null OR NamespacePrefix = 'symbtablesnap' ORDER BY CreatedDate DESC";
@@ -150,7 +149,6 @@ export async function compile(org: Org) {
     console.log(`Validation prepared ${requestId}, validating...`);
     await waitForValidationCompleted(conn, requestId);
     console.log('Validation successful.');
-    // await generateSnapshot(containerId);
     return {
         containerId
     };

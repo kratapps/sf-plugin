@@ -13,7 +13,36 @@
 
 <!-- commands -->
 
+- [`sf kratapps apex compile`](#sf-kratapps-apex-compile)
 - [`sf kratapps remote deploy start`](#sf-kratapps-remote-deploy-start)
+
+## `sf kratapps apex compile`
+
+Compile all apex classes and triggers.
+
+```
+USAGE
+  $ sf kratapps apex compile -o <value> [--json]
+
+FLAGS
+  -o, --target-org=<value>  (required) Login username or alias for the target org.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Compile all apex classes and triggers.
+
+  Start the apex compilation. The result is useful to retrieve the symbol table.
+
+EXAMPLES
+  $ sf kratapps apex compile
+
+FLAG DESCRIPTIONS
+  -o, --target-org=<value>  Login username or alias for the target org.
+
+    Overrides your default org.
+```
 
 ## `sf kratapps remote deploy start`
 

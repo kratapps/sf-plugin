@@ -51,3 +51,5 @@ test/
 .vscode/
 yarn.lock
 Makefile
+tmp
+schema.d.ts
