@@ -162,7 +162,9 @@ export interface symbtablesnap__Interface_Implementation__c extends SObjectSnaps
     LastModifiedById?: string;
     SystemModstamp?: DateString;
     symbtablesnap__Implementation_Class__c?: string;
+    symbtablesnap__Implementation_Class__r?: symbtablesnap__Apex_Class__c;
     symbtablesnap__Implements_Interface__c?: string | null;
+    symbtablesnap__Implements_Interface__r?: symbtablesnap__Apex_Class__c;
     symbtablesnap__Implements__c?: string;
     symbtablesnap__Snapshot__c?: string | null;
 }
@@ -195,12 +197,16 @@ export interface symbtablesnap__Method_Reference__c extends SObjectSnapshotRecor
     SystemModstamp?: DateString;
     symbtablesnap__Referenced_Class_Name__c?: string;
     symbtablesnap__Referenced_Namespace__c?: string | null;
-    symbtablesnap__Used_By_Class__c?: string | null;
     symbtablesnap__Referenced_Method__c?: string | null;
     symbtablesnap__Referenced_Method_Name__c?: string | null;
     symbtablesnap__Snapshot__c?: string | null;
+    symbtablesnap__Used_By_Class__c?: string | null;
+    symbtablesnap__Used_By_Class__r?: symbtablesnap__Apex_Class__c;
     symbtablesnap__Used_By_Trigger__c?: string | null;
+    symbtablesnap__Used_By_Trigger__r?: symbtablesnap__Apex_Trigger__c;
     symbtablesnap__Used_By_Method__c?: string | null;
+    symbtablesnap__Used_By_Method__r?: symbtablesnap__Method__c;
+    symbtablesnap__Referenced_Method__r?: symbtablesnap__Method__c;
     symbtablesnap__Reference_Line__c?: number | null;
     symbtablesnap__Reference_Column__c?: number | null;
 }

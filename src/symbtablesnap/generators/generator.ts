@@ -24,6 +24,7 @@ import { MethodDeclarationGenerator } from './methodDeclarationGenerator.js';
 import { hashCode } from '../../utils/hashUtils.js';
 import { Selector } from '../data/selector.js';
 import { SnapshotData } from '../data/snapshotData.js';
+import { buildGraph } from '../graph/buildGraph.js';
 
 type Relationship = {
     record: SnapshotRecord;
@@ -69,10 +70,15 @@ export class Context {
         this.snapshot = newSnapshot();
         this.targetConn = targetConn;
         this.conn = snapshotConn;
+        this.clear();
+    }
+
+    clear() {
         for (let sObjectType of sObjectOrder) {
             this.toUpsert[sObjectType] = [];
         }
         this.relationships = [];
+        this.recordsByKey = {};
     }
 
     async markClassesAsEnqueued(): Promise<void> {
@@ -184,22 +190,9 @@ export async function generateSnapshot(context: Context): Promise<void> {
 }
 
 async function updateLookups(context: Context) {
-    context.verbose = true;
-    for (let sObjectType of sObjectOrder) {
-        context.toUpsert[sObjectType] = [];
-        context.relationships = [];
-    }
-    context.recordsByKey = {};
     console.log('Updating lookup IDs...');
-    const selector = new Selector(context.conn);
-    const snapshot = new SnapshotData();
-    const snapshotId = context.snapshot.Id!;
-    snapshot.apexClasses = await selector.queryApexClasses(snapshotId);
-    snapshot.apexTriggers = await selector.queryApexTriggers(snapshotId);
-    snapshot.interfaceImplementations = await selector.queryInterfaceImplementations(snapshotId);
-    snapshot.methods = await selector.queryMethods(snapshotId);
-    snapshot.properties = await selector.queryProperties(snapshotId);
-    snapshot.methodReferences = await selector.queryMethodReferences(snapshotId);
+    context.clear();
+    const snapshot = await querySnapshotData(context);
     const declaredClasses: Record<string, symbtablesnap__Apex_Class__c> = {};
     const methodsByNames: Record<string, symbtablesnap__Method__c[]> = {};
     for (let apexClass of snapshot.apexClasses) {
@@ -252,19 +245,89 @@ async function updateLookups(context: Context) {
         }
     }
     await context.commit();
-    await updateMethodToMethodReferences(context, snapshot);
+    await updateMethodToMethodReferences(context);
 }
 
-async function updateMethodToMethodReferences(context: Context, snapshot: SnapshotData) {
+async function updateMethodToMethodReferences(context: Context) {
     console.log('Updating method to method reference...');
-    // todo update references
+    context.clear();
+    const snapshot = await querySnapshotData(context);
+
+    // OK in MethodReferenceGenerator => create entry for each location in (references)
+    // OK in MethodGenerator => create Method_Reference__c records for each location in (references)
+
+    // TODO query:Method_Reference__c => Used_By_Class__c != null => look at references
+    // find and populate Used_By_Method__c,
+
+    // TODO in GraphBuilder => addRelationship for Used_By_Method__c to Referenced_Method__c
+
+    for (let methodRef of snapshot.methodReferences) {
+        if (methodRef.symbtablesnap__Used_By_Class__c != null) {
+            //                methodRef.Used_By_Method__c = todo
+            if (methodRef.symbtablesnap__Referenced_Method_Name__c == null) {
+                //                    methodRef.Referenced_Method_Name__c = todo
+            }
+        }
+    }
     await context.commit();
-    await updateReferencesScore(context, snapshot);
+    await updateReferencesScore(context);
 }
 
-async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
-    console.log('Updating references score...');
-    // todo update scores
+async function updateReferencesScore(context: Context) {
+    console.log('Calculating and updating reference scores...');
+    context.clear();
+    const snapshot = await querySnapshotData(context);
+    const graph = buildGraph(snapshot);
+    for (let apexTrigger of snapshot.apexTriggers) {
+        if (apexTrigger.symbtablesnap__Is_Active__c) {
+            graph.getNode(apexTrigger).addToScore(100, 100);
+            context.registerUpsert(apexTrigger);
+        }
+    }
+    for (let apexClass of snapshot.apexClasses) {
+        context.registerUpsert(apexClass);
+    }
+
+    for (let method of snapshot.methods) {
+        context.registerUpsert(method);
+    }
+
+    // new fields on Method: "Location Line" and "End Location Line" for all constructors+methods+properties.
+    // need to check for inner classes (tableDeclaration.location.{line,column}
+    // probably comparable(line, column) and sort all constructors+methods+properties from a class including inner classes
+    // after sorted: next element's {line, column} is the end position
+    // do we need methods from an inner class to be hooked up to the parent class as well?
+    // i.e. the list to sort for each class needs to include all method where the class is (symbtablesnap__Class__c or symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__c)
+
+    // new relationships:
+    // references[]:{line,column} => map to externalReference:name(+namespace)
+    // methods:references[]:{line,column} => map to externalReference:name(+namespace)
+    // externalReference:references[]:{line,column} => map to externalReference:name(+namespace)
+    // externalReference:methods:references[]:{line,column} => map to externalReference:name(+namespace)
+
+    // Is Test? => score +100, propagate +0.1
+    // Is Global? => score +100 if it's a packaging org
+
+    // Trigger Active => score +100
+    // Is Scheduled => void execute(SchedulableContext sc) +100
+
+    // propagate rules:
+    // trigger => method references, variable references
+    // Schedulable
+    // method referenced => method references, variable references
+    // class referenced => methods that return those classes
+    // interface method => method implementations
+
+    // Apex Class score is max(class score, methods score)
+    for (let method of snapshot.methods) {
+        const apexClassNode = graph.getNodeByKey(method.symbtablesnap__Class__r!.symbtablesnap__Snapshot_Key__c!);
+        const apexClass = apexClassNode.getRecord() as symbtablesnap__Apex_Class__c;
+        apexClass.symbtablesnap__Is_Referenced_Score__c = Math.max(
+            apexClass.symbtablesnap__Is_Referenced_Score__c!,
+            method.symbtablesnap__Is_Referenced_Score__c!
+        );
+        context.registerUpsert(apexClass);
+    }
     await context.commit();
     context.snapshot.symbtablesnap__Is_Latest__c = true;
     context.registerUpsert(context.snapshot);
@@ -274,4 +337,17 @@ async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
 async function queryOrganization(conn: Connection): Promise<Organization> {
     const result = await conn.query<Organization>('SELECT Id, NamespacePrefix FROM Organization LIMIT 1');
     return result.records[0];
+}
+
+async function querySnapshotData(context: Context): Promise<SnapshotData> {
+    const selector = new Selector(context.conn);
+    const snapshot = new SnapshotData();
+    const snapshotId = context.snapshot.Id!;
+    snapshot.apexClasses = await selector.queryApexClasses(snapshotId);
+    snapshot.apexTriggers = await selector.queryApexTriggers(snapshotId);
+    snapshot.interfaceImplementations = await selector.queryInterfaceImplementations(snapshotId);
+    snapshot.methods = await selector.queryMethods(snapshotId);
+    snapshot.properties = await selector.queryProperties(snapshotId);
+    snapshot.methodReferences = await selector.queryMethodReferences(snapshotId);
+    return snapshot;
 }

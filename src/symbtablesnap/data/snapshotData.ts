@@ -9,7 +9,7 @@ import {
     symbtablesnap__Method_Reference__c,
     symbtablesnap__Property__c
 } from '../../types/symbtalesnap.js';
-import { Optional } from '@salesforce/ts-types';
+import { hashCode } from '../../utils/hashUtils.js';
 
 export class SnapshotData {
     apexClasses: symbtablesnap__Apex_Class__c[] = [];
@@ -29,10 +29,9 @@ export class SnapshotData {
             methodsByIds[entityId].push(new ClassItem(method));
         }
         for (let property of this.properties) {
-            const entityId =
-                property.symbtablesnap__Class__c != null
-                    ? property.symbtablesnap__Class__r!.symbtablesnap__Class_ID__c!
-                    : property.symbtablesnap__Trigger__r!.symbtablesnap__Trigger_ID__c!;
+            const entityId = property.symbtablesnap__Class__c
+                ? property.symbtablesnap__Class__r!.symbtablesnap__Class_ID__c!
+                : property.symbtablesnap__Trigger__r!.symbtablesnap__Trigger_ID__c!;
             if (!methodsByIds.hasOwnProperty(entityId)) {
                 methodsByIds[entityId] = [];
             }
@@ -42,7 +41,6 @@ export class SnapshotData {
     }
 }
 
-//implements Comparable
 export class ClassItem {
     item: symbtablesnap__Method__c | symbtablesnap__Property__c;
 
@@ -72,49 +70,48 @@ export class ClassItem {
         return this.isMethod() ? 'symbtablesnap__Method__c' : 'symbtablesnap__Property__c';
     }
 
-    public getLine(): Optional<number> {
+    public getLine(): number {
         const line = this.isMethod()
             ? this.getMethod().symbtablesnap__Location_Line__c
             : this.getProperty().symbtablesnap__Location_Line__c;
-        return line ? Math.round(line) : undefined;
+        return Math.round(line!);
     }
 
-    public getColumn(): Optional<number> {
+    public getColumn(): number {
         const col = this.isMethod()
             ? this.getMethod().symbtablesnap__Location_Column__c
             : this.getProperty().symbtablesnap__Location_Column__c;
-        return col ? Math.round(col) : undefined;
+        return Math.round(col!);
     }
-    //
-    // public Boolean equals(Object unknown) {
-    //     if (unknown == null || !(unknown instanceof ClassItem)) {
-    //         return false;
-    //     }
-    //     ClassItem other = (ClassItem) unknown;
-    //     if (getType() != other.getType()) {
-    //         return false;
-    //     }
-    //     if (isMethod()) {
-    //         return getMethod().Snapshot_Key__c == other.getMethod().Snapshot_Key__c;
-    //     }
-    //     return getProperty().Snapshot_Key__c == other.getProperty().Snapshot_Key__c;
-    // }
-    //
-    // public override Integer hashCode() {
-    //     Integer hash = 7;
-    //     if (isMethod()) {
-    //         hash = 31 * hash + System.hashCode(method.Snapshot_Key__c);
-    //     } else {
-    //         hash = 31 * hash + System.hashCode(property.Snapshot_Key__c);
-    //     }
-    //     return hash;
-    // }
-    //
-    // public Integer compareTo(Object unknown) {
-    //     ClassItem other = (ClassItem) unknown;
-    //     if (getLine() != other.getLine()) {
-    //         return getLine() - other.getLine();
-    //     }
-    //     return getColumn() - other.getColumn();
-    // }
+
+    equals(object: unknown): boolean {
+        if (object == null || !(object instanceof ClassItem)) {
+            return false;
+        }
+        const other = object as ClassItem;
+        if (this.getType() != other.getType()) {
+            return false;
+        }
+        if (this.isMethod()) {
+            return this.getMethod().symbtablesnap__Snapshot_Key__c == other.getMethod().symbtablesnap__Snapshot_Key__c;
+        }
+        return this.getProperty().symbtablesnap__Snapshot_Key__c == other.getProperty().symbtablesnap__Snapshot_Key__c;
+    }
+
+    hashCode(): number {
+        let hash = 7;
+        if (this.isMethod()) {
+            hash = 31 * hash + hashCode(this.getMethod().symbtablesnap__Snapshot_Key__c);
+        } else {
+            hash = 31 * hash + hashCode(this.getProperty().symbtablesnap__Snapshot_Key__c);
+        }
+        return hash;
+    }
+}
+
+export function classItemSorter(a: ClassItem, b: ClassItem): number {
+    if (a.getLine() != b.getLine()) {
+        return a.getLine() - b.getLine();
+    }
+    return a.getColumn() - b.getColumn();
 }
