@@ -29,16 +29,12 @@ export class ApexClassGenerator {
                 symbtablesnap__Modifiers__c: modifiers == null ? undefined : modifiers.join(';'),
                 symbtablesnap__Namespace_Prefix__c: symbolTable.namespace,
                 symbtablesnap__Is_Top_Level_Class__c: true,
-                symbtablesnap__Number_of_Methods__c: 0,
+                symbtablesnap__Number_of_Methods__c: symbolTable.methods?.length || 0,
                 symbtablesnap__Is_Apex_Job_Enqueued__c: context.enqueuedApexClassIds.has(member.ContentEntityId),
                 symbtablesnap__Is_Referenced_Score__c: 0
             });
-            context.registerRelationship(apexClass, 'symbtablesnap__Snapshot__c', context.snapshot);
+            apexClass.symbtablesnap__Full_Name__c = apexClass.Name!;
             apexClass.Name = apexClass.Name!.substring(0, 80);
-            if (symbolTable.methods != null) {
-                apexClass.symbtablesnap__Number_of_Methods__c = symbolTable.methods.length;
-            }
-            apexClass.symbtablesnap__Full_Name__c = apexClass.Name;
             apexClass.symbtablesnap__Snapshot_Key__c = context.snapshot.Id + ':ApexClass:' + getHashCode(apexClass);
             context.registerRelationship(apexClass, 'symbtablesnap__Snapshot__c', context.snapshot);
             context.registerUpsert(apexClass);

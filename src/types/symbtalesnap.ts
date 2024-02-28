@@ -61,6 +61,22 @@ export function asApexTrigger(value: unknown): Optional<symbtablesnap__Apex_Trig
     return isApexTrigger(value) ? value : undefined;
 }
 
+export function isMethod(value: unknown): value is symbtablesnap__Method__c {
+    return isSnapshotRecord(value) && value?.attributes?.type === 'symbtablesnap__Method__c';
+}
+
+export function asMethod(value: unknown): Optional<symbtablesnap__Method__c> {
+    return isMethod(value) ? value : undefined;
+}
+
+export function isProperty(value: unknown): value is symbtablesnap__Property__c {
+    return isSnapshotRecord(value) && value?.attributes?.type === 'symbtablesnap__Property__c';
+}
+
+export function asProperty(value: unknown): Optional<symbtablesnap__Property__c> {
+    return isProperty(value) ? value : undefined;
+}
+
 export function isSnapshotRecord(value: unknown): value is SnapshotRecord {
     if (hasAnyJson(value, 'attributes')) {
         const attributes = value.attributes;
@@ -201,6 +217,7 @@ export interface symbtablesnap__Method__c extends SObjectSnapshotRecord {
     LastViewedDate?: DateString | null;
     LastReferencedDate?: DateString | null;
     symbtablesnap__Class__c?: string;
+    symbtablesnap__Class__r?: symbtablesnap__Apex_Class__c;
     symbtablesnap__Is_Referenced__c?: boolean;
     symbtablesnap__Is_Test__c?: boolean;
     symbtablesnap__Method_Name__c?: string;
@@ -230,7 +247,9 @@ export interface symbtablesnap__Property__c extends SObjectSnapshotRecord {
     SystemModstamp?: DateString;
     symbtablesnap__Snapshot__c?: string | null;
     symbtablesnap__Class__c?: string | null;
+    symbtablesnap__Class__r?: symbtablesnap__Apex_Class__c;
     symbtablesnap__Trigger__c?: string | null;
+    symbtablesnap__Trigger__r?: symbtablesnap__Apex_Trigger__c;
     symbtablesnap__Location_Line__c?: number | null;
     symbtablesnap__Location_Column__c?: number | null;
 }

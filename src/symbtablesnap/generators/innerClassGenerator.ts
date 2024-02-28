@@ -37,8 +37,8 @@ export class InnerClassGenerator {
                 symbtablesnap__Number_of_Methods__c: symbolTable.methods?.length || 0,
                 symbtablesnap__Is_Referenced_Score__c: 0
             });
+            apexClass.symbtablesnap__Full_Name__c = apexClass.Name!;
             apexClass.Name = apexClass.Name!.substring(0, 80);
-            apexClass.symbtablesnap__Full_Name__c = apexClass.Name;
             apexClass.symbtablesnap__Snapshot_Key__c = context.snapshot.Id + ':InnerClass:' + getHashCode(apexClass);
             context.registerRelationship(apexClass, 'symbtablesnap__Snapshot__c', context.snapshot);
             context.registerUpsert(apexClass);
