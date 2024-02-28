@@ -25,11 +25,23 @@ export type SnapshotRecord =
     | symbtablesnap__Declaration__c
     | symbtablesnap__Method_Declaration__c;
 
-export interface SObjectRecord {
+export type SnapshotRecordFields =
+    | keyof symbtablesnap__Symbol_Table_Snapshot__c
+    | keyof symbtablesnap__Apex_Class__c
+    | keyof symbtablesnap__Apex_Trigger__c
+    | keyof symbtablesnap__Method__c
+    | keyof symbtablesnap__Property__c
+    | keyof symbtablesnap__Interface_Implementation__c
+    | keyof symbtablesnap__Method_Reference__c
+    | keyof symbtablesnap__Declaration__c
+    | keyof symbtablesnap__Method_Declaration__c;
+
+export interface SObjectSnapshotRecord {
     attributes: {
         type: SnapshotSObjectType;
         url: string;
     };
+    symbtablesnap__Snapshot_Key__c?: string;
     Id?: string;
 }
 
@@ -59,7 +71,7 @@ export function isSnapshotRecord(value: unknown): value is SnapshotRecord {
     return false;
 }
 
-export interface symbtablesnap__Apex_Class__c extends SObjectRecord {
+export interface symbtablesnap__Apex_Class__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     OwnerId?: string;
     IsDeleted?: boolean;
@@ -68,7 +80,7 @@ export interface symbtablesnap__Apex_Class__c extends SObjectRecord {
     CreatedById?: string;
     LastModifiedDate?: DateString;
     LastModifiedById?: string;
-    symbtablesnap__Access_Modifier__c?: string;
+    symbtablesnap__Access_Modifier__c?: string | null;
     symbtablesnap__Class_ID__c?: string;
     symbtablesnap__Class_Name__c?: string;
     symbtablesnap__Extends_Class__c?: string;
@@ -80,7 +92,7 @@ export interface symbtablesnap__Apex_Class__c extends SObjectRecord {
     symbtablesnap__Is_Referenced_Score__c?: number;
     symbtablesnap__Is_Test__c?: boolean;
     symbtablesnap__Is_Top_Level_Class__c?: boolean;
-    symbtablesnap__Modifiers__c?: string;
+    symbtablesnap__Modifiers__c?: string | null;
     symbtablesnap__Namespace_Prefix__c?: string;
     symbtablesnap__Number_of_Methods__c?: number;
     symbtablesnap__Snapshot__c?: string;
@@ -92,7 +104,7 @@ export interface symbtablesnap__Apex_Class__c extends SObjectRecord {
     SystemModstamp?: DateString;
 }
 
-export interface symbtablesnap__Apex_Trigger__c extends SObjectRecord {
+export interface symbtablesnap__Apex_Trigger__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     IsDeleted?: boolean;
     Name?: string | null;
@@ -110,7 +122,7 @@ export interface symbtablesnap__Apex_Trigger__c extends SObjectRecord {
     symbtablesnap__Is_Referenced_Score__c?: number | null;
 }
 
-export interface symbtablesnap__Declaration__c extends SObjectRecord {
+export interface symbtablesnap__Declaration__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     OwnerId?: string;
     IsDeleted?: boolean;
@@ -124,7 +136,7 @@ export interface symbtablesnap__Declaration__c extends SObjectRecord {
     symbtablesnap__Snapshot__c?: string;
 }
 
-export interface symbtablesnap__Interface_Implementation__c extends SObjectRecord {
+export interface symbtablesnap__Interface_Implementation__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     IsDeleted?: boolean;
     Name?: string | null;
@@ -139,7 +151,7 @@ export interface symbtablesnap__Interface_Implementation__c extends SObjectRecor
     symbtablesnap__Snapshot__c?: string | null;
 }
 
-export interface symbtablesnap__Method_Declaration__c extends SObjectRecord {
+export interface symbtablesnap__Method_Declaration__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     OwnerId?: string;
     IsDeleted?: boolean;
@@ -155,7 +167,7 @@ export interface symbtablesnap__Method_Declaration__c extends SObjectRecord {
     symbtablesnap__Type__c?: string;
 }
 
-export interface symbtablesnap__Method_Reference__c extends SObjectRecord {
+export interface symbtablesnap__Method_Reference__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     OwnerId?: string;
     IsDeleted?: boolean;
@@ -177,7 +189,7 @@ export interface symbtablesnap__Method_Reference__c extends SObjectRecord {
     symbtablesnap__Reference_Column__c?: number | null;
 }
 
-export interface symbtablesnap__Method__c extends SObjectRecord {
+export interface symbtablesnap__Method__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     IsDeleted?: boolean;
     Name?: string | null;
@@ -206,7 +218,7 @@ export interface symbtablesnap__Method__c extends SObjectRecord {
     symbtablesnap__Location_Column__c?: number | null;
 }
 
-export interface symbtablesnap__Property__c extends SObjectRecord {
+export interface symbtablesnap__Property__c extends SObjectSnapshotRecord {
     symbtablesnap__Snapshot_Key__c?: string;
     OwnerId?: string;
     IsDeleted?: boolean;
@@ -223,7 +235,7 @@ export interface symbtablesnap__Property__c extends SObjectRecord {
     symbtablesnap__Location_Column__c?: number | null;
 }
 
-export interface symbtablesnap__Symbol_Table_Snapshot__c extends SObjectRecord {
+export interface symbtablesnap__Symbol_Table_Snapshot__c extends SObjectSnapshotRecord {
     OwnerId?: string;
     IsDeleted?: boolean;
     Name?: string;

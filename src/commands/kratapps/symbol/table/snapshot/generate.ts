@@ -44,14 +44,18 @@ export default class SymbolTableSnapshotGenerate extends SfCommand<Result> {
     };
 
     public async run(): Promise<Result> {
-        const { flags } = await this.parse(SymbolTableSnapshotGenerate);
-        const targetOrg = flags['target-org'];
-        const snapshotOrg = flags['snapshot-org'] || targetOrg;
-        const containerIdFlag = flags['container-id'];
-        const targetConn = targetOrg.getConnection();
-        const conn = snapshotOrg.getConnection();
-        const containerId = containerIdFlag ? containerIdFlag : (await compile(snapshotOrg.getConnection('40.0'))).containerId;
-        await generateSnapshot(new Context(containerId, targetConn, conn));
+        try {
+            const { flags } = await this.parse(SymbolTableSnapshotGenerate);
+            const targetOrg = flags['target-org'];
+            const snapshotOrg = flags['snapshot-org'] || targetOrg;
+            const containerIdFlag = flags['container-id'];
+            const targetConn = targetOrg.getConnection();
+            const conn = snapshotOrg.getConnection();
+            const containerId = containerIdFlag ? containerIdFlag : (await compile(snapshotOrg.getConnection('40.0'))).containerId;
+            await generateSnapshot(new Context(containerId, targetConn, conn));
+        } catch (e) {
+            console.error(e);
+        }
         return {};
     }
 }

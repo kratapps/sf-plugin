@@ -28,8 +28,8 @@ export interface ApexClass {
 
 export interface SymbolTable {
     annotations: Annotation;
-    constructors: Constructor;
-    externalReferences: ExternalReference;
+    constructors: Constructor[];
+    externalReferences: ExternalReference[];
     id: string;
     innerClasses: SymbolTable[];
     interfaces: string[];
