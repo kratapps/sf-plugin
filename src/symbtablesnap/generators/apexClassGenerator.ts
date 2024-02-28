@@ -1,7 +1,7 @@
 import { Context } from './generator.js';
 import { ApexClassMember } from '../../types/tooling.js';
 import { newApexClass } from '../factory/sObjectFactory.js';
-import { hasTestMethodModifier } from '../../utils/generatorUtils.js';
+import { getAccessModifier, hasTestMethodModifier } from '../../utils/generatorUtils.js';
 import { symbtablesnap__Apex_Class__c } from '../../types/symbtalesnap.js';
 import { hashCode } from '../../utils/hashUtils.js';
 
@@ -21,13 +21,15 @@ export class ApexClassGenerator {
             const apexClass = newApexClass({
                 Name: hasSymbolTable ? (symbolTable.namespace ? symbolTable.namespace + '.' : '') + symbolTable.name : member.FullName,
                 symbtablesnap__Class_ID__c: member.ContentEntityId,
-                symbtablesnap__Class_Name__c: symbolTable?.name,
-                symbtablesnap__Extends_Full_Name__c: symbolTable?.parentClass,
-                symbtablesnap__Implements__c: symbolTable?.interfaces == null ? undefined : symbolTable.interfaces.join(';'),
+                symbtablesnap__Class_Name__c: symbolTable?.name || '',
+                symbtablesnap__Extends_Full_Name__c: symbolTable?.parentClass || '',
+                symbtablesnap__Implements__c: symbolTable?.interfaces == null ? '' : symbolTable.interfaces.join(';'),
                 symbtablesnap__Symbol_Table_Available__c: hasSymbolTable,
                 symbtablesnap__Is_Test__c: hasTestMethodModifier(modifiers),
-                symbtablesnap__Modifiers__c: modifiers == null ? undefined : modifiers.join(';'),
+                symbtablesnap__Modifiers__c: modifiers ? modifiers.join(';') : '',
+                symbtablesnap__Access_Modifier__c: getAccessModifier(modifiers) || '',
                 symbtablesnap__Namespace_Prefix__c: symbolTable.namespace,
+                symbtablesnap__Top_Level_Full_Name__c: '',
                 symbtablesnap__Is_Top_Level_Class__c: true,
                 symbtablesnap__Number_of_Methods__c: symbolTable.methods?.length || 0,
                 symbtablesnap__Is_Apex_Job_Enqueued__c: context.enqueuedApexClassIds.has(member.ContentEntityId),
