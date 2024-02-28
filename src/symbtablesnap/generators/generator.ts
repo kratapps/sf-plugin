@@ -85,6 +85,9 @@ export class Context {
     }
 
     registerRelationship(record: SnapshotRecord, relatedToField: SnapshotRecordFields, relatedTo: SnapshotRecord) {
+        if (!relatedTo) {
+            throw Error('ups');
+        }
         this.relationships.push({
             record,
             relatedToField,
@@ -115,10 +118,20 @@ export class Context {
     async commit() {
         for (let sObjectType of sObjectOrder) {
             const records = this.toUpsert[sObjectType];
-            if (records.length > 0) {
-                console.log('upsert', sObjectType, records.length);
+            if (records && records.length > 0) {
+                console.log('Upsert', sObjectType, records.length);
                 this.resolveRelationships();
-                const res = await this.conn.sobject(sObjectType).upsertBulk(records, 'symbtablesnap__Snapshot_Key__c');
+                const toUpsert = records.map((it) => {
+                    let rec = {};
+                    for (let fieldName of Object.keys(it)) {
+                        if (!fieldName.endsWith('__r')) {
+                            // @ts-ignore
+                            rec[fieldName] = it[fieldName];
+                        }
+                    }
+                    return rec;
+                });
+                const res = await this.conn.sobject(sObjectType).upsertBulk(toUpsert, 'symbtablesnap__Snapshot_Key__c');
                 res.forEach((it, idx) => {
                     if (it.success) {
                         records[idx].Id = it.id || undefined;
@@ -203,37 +216,21 @@ async function updateLookups(context: Context) {
             apexClass.symbtablesnap__Extends_Full_Name__c &&
             declaredClasses.hasOwnProperty(apexClass.symbtablesnap__Extends_Full_Name__c)
         ) {
-            // apexClass.symbtablesnap__Extends_Class__c = declaredClasses[apexClass.symbtablesnap__Extends_Full_Name__c].Id;
-            // console.log('upsert class', apexClass.symbtablesnap__Snapshot_Key__c);
-            context.registerRelationship(
-                apexClass,
-                'symbtablesnap__Extends_Class__c',
-                declaredClasses[apexClass.symbtablesnap__Extends_Full_Name__c]
-            );
+            apexClass.symbtablesnap__Extends_Class__c = declaredClasses[apexClass.symbtablesnap__Extends_Full_Name__c].Id;
             context.registerUpsert(apexClass);
         }
         if (
             apexClass.symbtablesnap__Top_Level_Full_Name__c &&
             declaredClasses.hasOwnProperty(apexClass.symbtablesnap__Top_Level_Full_Name__c)
         ) {
-            // apexClass.symbtablesnap__Top_Level_Class__c = declaredClasses[apexClass.symbtablesnap__Top_Level_Full_Name__c].Id;
-            // console.log('upsert class2', apexClass.symbtablesnap__Snapshot_Key__c);
-            context.registerRelationship(
-                apexClass,
-                'symbtablesnap__Top_Level_Class__c',
-                declaredClasses[apexClass.symbtablesnap__Top_Level_Full_Name__c]
-            );
+            apexClass.symbtablesnap__Top_Level_Class__c = declaredClasses[apexClass.symbtablesnap__Top_Level_Full_Name__c].Id;
             context.registerUpsert(apexClass);
         }
     }
     for (let implementation of snapshot.interfaceImplementations) {
-        // implementation.symbtablesnap__Implements_Interface__c = declaredClasses[implementation.symbtablesnap__Implements__c!]?.Id;
-        // console.log('upsert impl');
-        context.registerRelationship(
-            implementation,
-            'symbtablesnap__Implements_Interface__c',
-            declaredClasses[implementation.symbtablesnap__Implements__c!]
-        );
+        if (declaredClasses[implementation.symbtablesnap__Implements__c!]) {
+            implementation.symbtablesnap__Implements_Interface__c = declaredClasses[implementation.symbtablesnap__Implements__c!]?.Id;
+        }
         context.registerUpsert(implementation);
     }
     for (let methodReference of snapshot.methodReferences) {
@@ -249,9 +246,7 @@ async function updateLookups(context: Context) {
                 potentialMethod.symbtablesnap__Class__r!.symbtablesnap__Namespace_Prefix__c ==
                     methodReference.symbtablesnap__Referenced_Namespace__c
             ) {
-                // methodReference.symbtablesnap__Referenced_Method__c = potentialMethod.Id;
-                // console.log('upsert method ref');
-                context.registerRelationship(methodReference, 'symbtablesnap__Referenced_Method__c', potentialMethod);
+                methodReference.symbtablesnap__Referenced_Method__c = potentialMethod.Id;
                 context.registerUpsert(methodReference);
             }
         }

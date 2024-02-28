@@ -59,6 +59,7 @@ export class Selector {
             SELECT
                 Id,
                 Name,
+                symbtablesnap__Snapshot_Key__c,
                 symbtablesnap__Implements__c,
                 symbtablesnap__Implements_Interface__c,
                 symbtablesnap__Implements_Interface__r.Id,
@@ -140,6 +141,7 @@ export class Selector {
         const query = `
             SELECT 
                 Id,
+                symbtablesnap__Snapshot_Key__c,
                 symbtablesnap__Referenced_Class_Name__c,
                 symbtablesnap__Referenced_Namespace__c,
                 symbtablesnap__Referenced_Method_Name__c,
