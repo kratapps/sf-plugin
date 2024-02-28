@@ -21,7 +21,6 @@ export function buildGraph(snapshot: SnapshotData): Graph {
                 graph.addRelationship(reference.symbtablesnap__Used_By_Class__r, reference.symbtablesnap__Referenced_Method__r);
             }
             if (reference.symbtablesnap__Used_By_Trigger__r != null) {
-                console.log('add relationship', reference.symbtablesnap__Used_By_Trigger__r, reference.symbtablesnap__Referenced_Method__r);
                 graph.addRelationship(reference.symbtablesnap__Used_By_Trigger__r, reference.symbtablesnap__Referenced_Method__r);
             }
         }

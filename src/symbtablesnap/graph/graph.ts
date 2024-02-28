@@ -39,9 +39,7 @@ export class Node {
         let score = this.record[IS_REFERENCED_SCORE_FIELD] as number;
         score = score == null ? 0 : score;
         this.setScore(score + scoreToAdd);
-        console.log('set score ', score + scoreToAdd, this.record[SNAPSHOT_KEY_FIELD]);
         if (scoreToPropagate != null && scoreToPropagate != 0) {
-            console.log('do propagate through', this.toNodes.length);
             for (let child of this.toNodes) {
                 child.addToScore(scoreToPropagate, scoreToPropagate);
             }
