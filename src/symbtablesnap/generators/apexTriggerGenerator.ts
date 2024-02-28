@@ -21,7 +21,7 @@ export class ApexTriggerGenerator {
                 symbtablesnap__Trigger_Name__c: member.ContentEntity.Name,
                 symbtablesnap__Symbol_Table_Available__c: Boolean(symbolTable),
                 symbtablesnap__Namespace_Prefix__c: member.ContentEntity.NamespacePrefix,
-                symbtablesnap__Is_Active__c: member.ContentEntity.Status == 'Active',
+                symbtablesnap__Is_Active__c: member.ContentEntity.Status === 'Active',
                 symbtablesnap__Is_Referenced_Score__c: 0
             });
             apexTrigger.Name = apexTrigger.Name!.substring(0, 80);

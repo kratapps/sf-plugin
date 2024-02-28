@@ -136,8 +136,8 @@ export async function generateSnapshot(context: Context): Promise<void> {
     console.log('Querying AsyncApexJob to search for scheduled apex classes...');
     await context.markClassesAsEnqueued();
     console.log(`Using Metadata Container with ID ${context.metadataContainerId} to retrieve symbol table.`);
-    const classQuery = `SELECT FullName, ContentEntityId, ContentEntity.Name, SymbolTable FROM ApexClassMember WHERE IsDeleted = FALSE AND (ContentEntity.NamespacePrefix = '${context.snapshot.symbtablesnap__Org_Namespace_Prefix__c}') AND MetadataContainerId = '${context.metadataContainerId}'`;
-    const triggerQuery = `SELECT FullName, ContentEntityId, ContentEntity.Name, SymbolTable FROM ApexTriggerMember WHERE IsDeleted = FALSE AND (ContentEntity.NamespacePrefix = '${context.snapshot.symbtablesnap__Org_Namespace_Prefix__c}') AND MetadataContainerId = '${context.metadataContainerId}'`;
+    const classQuery = `SELECT FullName, ContentEntityId, ContentEntity.Name, ContentEntity.NamespacePrefix, SymbolTable FROM ApexClassMember WHERE IsDeleted = FALSE AND (ContentEntity.NamespacePrefix = '${context.snapshot.symbtablesnap__Org_Namespace_Prefix__c}') AND MetadataContainerId = '${context.metadataContainerId}'`;
+    const triggerQuery = `SELECT FullName, ContentEntityId, ContentEntity.Name, ContentEntity.NamespacePrefix, ContentEntity.Status, SymbolTable FROM ApexTriggerMember WHERE IsDeleted = FALSE AND (ContentEntity.NamespacePrefix = '${context.snapshot.symbtablesnap__Org_Namespace_Prefix__c}') AND MetadataContainerId = '${context.metadataContainerId}'`;
     await queryAllTooling<ApexClassMember>(context.targetConn, classQuery, async (result) => {
         await context.apexClassGenerator.generate(result.records);
     });
