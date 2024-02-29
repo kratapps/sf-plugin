@@ -146,6 +146,8 @@ export class Selector {
                 symbtablesnap__Snapshot_Key__c,
                 symbtablesnap__Referenced_Class_Name__c,
                 symbtablesnap__Referenced_Namespace__c,
+                symbtablesnap__Reference_Line__c,
+                symbtablesnap__Reference_Column__c,
                 symbtablesnap__Referenced_Method_Name__c,
                 symbtablesnap__Referenced_Method__c,
                 symbtablesnap__Referenced_Method__r.Id,
@@ -160,14 +162,16 @@ export class Selector {
                 symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Class_Name__c,
                 symbtablesnap__Used_By_Class__c,
                 symbtablesnap__Used_By_Class__r.Id,
+                symbtablesnap__Used_By_Class__r.symbtablesnap__Class_ID__c,
+                symbtablesnap__Used_By_Class__r.symbtablesnap__Class_Name__c,
                 symbtablesnap__Used_By_Class__r.symbtablesnap__Snapshot_Key__c,
                 symbtablesnap__Used_By_Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Used_By_Class__r.symbtablesnap__Class_Name__c,
                 symbtablesnap__Used_By_Trigger__c,
                 symbtablesnap__Used_By_Trigger__r.Id,
+                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Trigger_ID__c,
+                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Trigger_Name__c,
                 symbtablesnap__Used_By_Trigger__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Trigger_Name__c
+                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Namespace_Prefix__c
             FROM symbtablesnap__Method_Reference__c
             WHERE symbtablesnap__Snapshot__c = '${snapshotId}'`;
         const records: symbtablesnap__Property__c[] = [];

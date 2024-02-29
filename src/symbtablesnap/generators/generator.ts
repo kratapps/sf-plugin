@@ -1,11 +1,11 @@
 import {
-    SnapshotSObjectType,
     SnapshotRecord,
-    symbtablesnap__Symbol_Table_Snapshot__c,
-    SObjectSnapshotRecord,
     SnapshotRecordFields,
+    SnapshotSObjectType,
+    SObjectSnapshotRecord,
     symbtablesnap__Apex_Class__c,
-    symbtablesnap__Method__c
+    symbtablesnap__Method__c,
+    symbtablesnap__Symbol_Table_Snapshot__c
 } from '../../types/symbtalesnap.js';
 import { AsyncApexJob, Organization } from '../../types/standard.js';
 import { Connection } from '@salesforce/core/lib/org/connection.js';
@@ -23,8 +23,9 @@ import { MethodLocalReferenceGenerator } from './methodLocalReferenceGenerator.j
 import { MethodDeclarationGenerator } from './methodDeclarationGenerator.js';
 import { hashCode } from '../../utils/hashUtils.js';
 import { Selector } from '../data/selector.js';
-import { SnapshotData } from '../data/snapshotData.js';
+import { ClassItem, classItemSorter, SnapshotData } from '../data/snapshotData.js';
 import { buildGraph } from '../graph/buildGraph.js';
+import { Optional } from '@salesforce/ts-types';
 
 type Relationship = {
     record: SnapshotRecord;
@@ -70,6 +71,8 @@ export class Context {
         this.snapshot = newSnapshot();
         this.targetConn = targetConn;
         this.conn = snapshotConn;
+        this.conn.bulk.pollInterval = 5000;
+        this.conn.bulk.pollTimeout = 120000;
         this.clear();
     }
 
@@ -185,7 +188,6 @@ export async function generateSnapshot(context: Context): Promise<void> {
     await queryAllTooling<ApexTriggerMember>(context.targetConn, triggerQuery, async (result) => {
         await context.apexTriggerGenerator.generate(result.records);
     });
-    context.snapshot.symbtablesnap__Is_Latest__c = true;
     context.registerUpsert(context.snapshot);
     await context.commit();
     await updateLookups(context);
@@ -193,6 +195,7 @@ export async function generateSnapshot(context: Context): Promise<void> {
 
 async function updateLookups(context: Context) {
     console.log('Updating lookups...');
+    context.recordsByKey = {};
     context.clear();
     const snapshot = await querySnapshotData(context);
     const declaredClasses: Record<string, symbtablesnap__Apex_Class__c> = {};
@@ -263,11 +266,26 @@ async function updateLookups(context: Context) {
 }
 
 async function updateMethodToMethodReferences(context: Context, snapshot: SnapshotData) {
-    console.log('Updating method to method reference...');
+    console.log('Updating method to method references...');
     context.clear();
+    function findItem(items: ClassItem[], lineNumber: number, type: 'method' | 'property'): Optional<ClassItem> {
+        let foundItem: Optional<ClassItem> = undefined;
+        for (let i = 0; items && i < items.length; i++) {
+            const item = items[i];
+            if (item.getLine() < lineNumber && ((type === 'method' && item.isMethod()) || (type === 'property' && item.isProperty()))) {
+                foundItem = item;
+            } else if (item.getLine() > lineNumber) {
+                return foundItem;
+            }
+        }
+        return foundItem;
+    }
 
-    // TODO in MethodReferenceGenerator => create entry for each location in (references)
-    // TODO in MethodGenerator => create Method_Reference__c records for each location in (references)
+    const classItemsByEntityIds = snapshot.getClassItemsByEntityIds();
+    for (let entityId of Object.keys(classItemsByEntityIds)) {
+        const items = classItemsByEntityIds[entityId];
+        items.sort(classItemSorter);
+    }
 
     // TODO query:Method_Reference__c => Used_By_Class__c != null => look at references
     // find and populate Used_By_Method__c,
@@ -275,11 +293,20 @@ async function updateMethodToMethodReferences(context: Context, snapshot: Snapsh
     // TODO in GraphBuilder => addRelationship for Used_By_Method__c to Referenced_Method__c
 
     for (let methodRef of snapshot.methodReferences) {
-        if (methodRef.symbtablesnap__Used_By_Class__c != null) {
-            //                methodRef.Used_By_Method__c = todo
-            if (methodRef.symbtablesnap__Referenced_Method_Name__c == null) {
-                //                    methodRef.Referenced_Method_Name__c = todo
+        if (methodRef.symbtablesnap__Used_By_Class__c && methodRef.symbtablesnap__Reference_Line__c) {
+            const line = methodRef.symbtablesnap__Reference_Line__c;
+            const usedByItems = classItemsByEntityIds[methodRef.symbtablesnap__Used_By_Class__r?.symbtablesnap__Class_ID__c!];
+            const usedByMethod = findItem(usedByItems, line, 'method');
+            if (usedByMethod) {
+                if (methodRef.symbtablesnap__Referenced_Method_Name__c === 'isNotNull') {
+                    // console.log(methodRef, usedByMethod.getMethod());
+                }
+                context.registerRelationship(methodRef, 'symbtablesnap__Used_By_Method__c', usedByMethod.getMethod());
+                context.registerUpsert(methodRef);
             }
+            // if (methodRef.symbtablesnap__Referenced_Method_Name__c == null) {
+            //                    methodRef.Referenced_Method_Name__c = todo
+            // }
         }
     }
     await context.commit();
@@ -298,7 +325,7 @@ async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
     }
     for (let apexClass of snapshot.apexClasses) {
         if (apexClass.symbtablesnap__Is_Test__c) {
-            graph.getNode(apexClass).addToScore(100, 0.1);
+            graph.getNode(apexClass).addToScore(100, 0.01);
         }
         if (apexClass.symbtablesnap__Access_Modifier__c === 'global' && apexClass.symbtablesnap__Namespace_Prefix__c) {
             graph.getNode(apexClass).addToScore(100, 100);
@@ -308,7 +335,7 @@ async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
 
     for (let method of snapshot.methods) {
         if (method.symbtablesnap__Is_Test__c) {
-            graph.getNode(method).addToScore(100, 0.1);
+            graph.getNode(method).addToScore(100, 0.01);
         }
         if (
             method.symbtablesnap__Class__r!.symbtablesnap__Is_Apex_Job_Enqueued__c &&

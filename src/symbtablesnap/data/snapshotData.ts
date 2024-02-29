@@ -22,6 +22,7 @@ export class SnapshotData {
     getClassItemsByEntityIds(): Record<string, ClassItem[]> {
         const methodsByIds: Record<string, ClassItem[]> = {};
         for (let method of this.methods) {
+            // Class ID is same for inner and top-level class.
             const entityId = method.symbtablesnap__Class__r!.symbtablesnap__Class_ID__c!;
             if (!methodsByIds.hasOwnProperty(entityId)) {
                 methodsByIds[entityId] = [];
@@ -50,6 +51,10 @@ export class ClassItem {
 
     public isMethod() {
         return isMethod(this.item);
+    }
+
+    public isProperty() {
+        return isProperty(this.item);
     }
 
     public getMethod(): symbtablesnap__Method__c {

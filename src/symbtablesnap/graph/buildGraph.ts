@@ -1,4 +1,4 @@
-import { classItemSorter, SnapshotData } from '../data/snapshotData.js';
+import { SnapshotData } from '../data/snapshotData.js';
 import { Graph } from './graph.js';
 
 export function buildGraph(snapshot: SnapshotData): Graph {
@@ -52,11 +52,6 @@ export function buildGraph(snapshot: SnapshotData): Graph {
                 implementation.symbtablesnap__Implements_Interface__r
             );
         }
-    }
-    const classItemsByEntityIds = snapshot.getClassItemsByEntityIds();
-    for (let entityId of Object.keys(classItemsByEntityIds)) {
-        const items = classItemsByEntityIds[entityId];
-        items.sort(classItemSorter);
     }
     return graph;
 }

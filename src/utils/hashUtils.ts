@@ -1,12 +1,12 @@
-import { Optional, isNumber } from '@salesforce/ts-types';
+import { isNumber } from '@salesforce/ts-types';
 
-export function hashCode(value: Optional<string> | number | null): number {
+export function hashCode(value: string | number | undefined | null): number {
     let hash = 0;
-    if (!value) {
+    if (value === undefined || value === null) {
         return hash;
     }
     if (isNumber(value)) {
-        return hash;
+        return value;
     }
     for (let i = 0; i < value.length; i++) {
         let code = value.charCodeAt(i);

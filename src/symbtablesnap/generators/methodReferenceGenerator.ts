@@ -64,7 +64,6 @@ function getHashCode(entityId: string, entityName: string, methodRef: symbtables
     hash = 31 * hash + hashCode(methodRef.symbtablesnap__Referenced_Class_Name__c);
     hash = 31 * hash + hashCode(methodRef.symbtablesnap__Referenced_Namespace__c);
     hash = 31 * hash + hashCode(methodRef.symbtablesnap__Referenced_Method_Name__c);
-    hash = 31 * hash + hashCode(methodRef.symbtablesnap__Reference_Line__c);
-    hash = 31 * hash + hashCode(methodRef.symbtablesnap__Reference_Column__c);
+    hash = 31 * hash + hashCode(methodRef.symbtablesnap__Reference_Line__c + '-' + methodRef.symbtablesnap__Reference_Column__c);
     return hash;
 }
