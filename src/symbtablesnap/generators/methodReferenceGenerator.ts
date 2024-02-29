@@ -37,7 +37,8 @@ export class MethodReferenceGenerator {
                         symbtablesnap__Referenced_Namespace__c: symbolRef.namespace,
                         symbtablesnap__Referenced_Method_Name__c: symbolMethod.name,
                         symbtablesnap__Reference_Line__c: location.line,
-                        symbtablesnap__Reference_Column__c: location.column
+                        symbtablesnap__Reference_Column__c: location.column,
+                        symbtablesnap__Is_External__c: true
                     });
                     methodRef.Name = methodRef.Name!.substring(0, 80);
                     methodRef.symbtablesnap__Snapshot_Key__c =

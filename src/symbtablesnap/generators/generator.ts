@@ -332,7 +332,6 @@ async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
         }
         context.registerUpsert(apexClass);
     }
-
     for (let method of snapshot.methods) {
         if (method.symbtablesnap__Is_Test__c) {
             graph.getNode(method).addToScore(100, 0.01);

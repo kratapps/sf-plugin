@@ -20,7 +20,8 @@ export class MethodLocalReferenceGenerator {
             symbtablesnap__Referenced_Namespace__c: apexClass.symbtablesnap__Namespace_Prefix__c,
             symbtablesnap__Referenced_Method_Name__c: method.symbtablesnap__Method_Name__c,
             symbtablesnap__Reference_Line__c: location.line,
-            symbtablesnap__Reference_Column__c: location.column
+            symbtablesnap__Reference_Column__c: location.column,
+            symbtablesnap__Is_External__c: false
         });
         methodRef.Name = methodRef.Name!.substring(0, 80);
         methodRef.symbtablesnap__Snapshot_Key__c =

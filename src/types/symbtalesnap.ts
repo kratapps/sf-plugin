@@ -195,6 +195,7 @@ export interface symbtablesnap__Method_Reference__c extends SObjectSnapshotRecor
     LastModifiedDate?: DateString;
     LastModifiedById?: string;
     SystemModstamp?: DateString;
+    symbtablesnap__Is_External__c?: boolean;
     symbtablesnap__Referenced_Class_Name__c?: string;
     symbtablesnap__Referenced_Namespace__c?: string | null;
     symbtablesnap__Referenced_Method__c?: string | null;

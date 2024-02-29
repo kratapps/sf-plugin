@@ -7,7 +7,6 @@ import {
 import { hashCode } from '../../utils/hashUtils.js';
 
 const IS_REFERENCED_SCORE_FIELD = 'symbtablesnap__Is_Referenced_Score__c';
-const SNAPSHOT_KEY_FIELD = 'symbtablesnap__Snapshot_Key__c';
 const SUPPORTED_TYPES = ['symbtablesnap__Apex_Class__c', 'symbtablesnap__Apex_Trigger__c', 'symbtablesnap__Method__c'];
 type NodeSupportedType = symbtablesnap__Apex_Class__c | symbtablesnap__Apex_Trigger__c | symbtablesnap__Method__c;
 
@@ -21,7 +20,7 @@ export class Node {
     }
 
     public getKey(): string {
-        return this.record[SNAPSHOT_KEY_FIELD] as string;
+        return this.record.symbtablesnap__Snapshot_Key__c!;
     }
 
     public addChild(node: Node) {
@@ -41,7 +40,7 @@ export class Node {
         }
         keysProcessed.add(this.record.symbtablesnap__Snapshot_Key__c!);
         let score = this.record[IS_REFERENCED_SCORE_FIELD] as number;
-        score = score == null ? 0 : score;
+        score = score ? score : 0;
         this.setScore(score + scoreToAdd);
         if (scoreToPropagate != null && scoreToPropagate != 0) {
             for (let child of this.toNodes) {
@@ -83,7 +82,7 @@ export class Graph {
         if (!this.isSupportedRecord(record)) {
             throw Error('Unsupported type: ' + record.attributes.type);
         }
-        let key = record[SNAPSHOT_KEY_FIELD]!;
+        let key = record.symbtablesnap__Snapshot_Key__c!;
         if (!this.nodesByKeys.hasOwnProperty(key)) {
             this.nodesByKeys[key] = new Node(record);
         }
