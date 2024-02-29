@@ -27,9 +27,9 @@ export class MethodGenerator {
                     null,
                     symbolMethod.modifiers,
                     symbolMethod.annotations,
-                    symbolMethod.location
+                    symbolMethod.location,
+                    symbolMethod.references
                 );
-                //                symbolMethod.references todo after all and properties generated
             }
         }
         if (symbolTable.methods != null) {
@@ -42,9 +42,9 @@ export class MethodGenerator {
                     symbolMethod.returnType,
                     symbolMethod.modifiers,
                     symbolMethod.annotations,
-                    symbolMethod.location
+                    symbolMethod.location,
+                    symbolMethod.references
                 );
-                //                symbolMethod.references todo after all and properties generated
             }
         }
     }
@@ -57,7 +57,8 @@ export class MethodGenerator {
         returnType: string | null,
         modifiers: string[],
         annotations: Annotation[],
-        location: Position
+        location: Position,
+        references: Position[]
     ) {
         const context = this.context;
         const methodName = name;
@@ -85,12 +86,12 @@ export class MethodGenerator {
                 params.push(symbolParam.type + ' ' + symbolParam.name);
             }
         }
-        method.Name = method.symbtablesnap__Method_Name__c + '(' + paramTypes.join(', ') + ')';
+        method.Name = method.symbtablesnap__Method_Name__c + '(' + params.join(', ') + ')';
         if (!isConstructor) {
             method.Name += ': ' + method.symbtablesnap__Return_Type__c;
         }
         method.Name = method.Name!.substring(0, 80);
-        method.symbtablesnap__Signature__c = method.symbtablesnap__Method_Name__c + '(' + params.join(', ') + ')';
+        method.symbtablesnap__Signature__c = method.symbtablesnap__Method_Name__c + '(' + paramTypes.join(', ') + ')';
         if (!isConstructor) {
             method.symbtablesnap__Signature__c += ': ' + method.symbtablesnap__Return_Type__c;
         }
@@ -110,7 +111,9 @@ export class MethodGenerator {
         context.registerRelationship(method, 'symbtablesnap__Class__c', apexClass);
         context.registerUpsert(method);
         await context.methodDeclarationGenerator.generate(method, modifiers, annotations);
-        await context.methodLocalReferenceGenerator.generate(method, apexClass, location);
+        for (let reference of references) {
+            await context.methodLocalReferenceGenerator.generate(method, apexClass, reference);
+        }
     }
 }
 

@@ -157,6 +157,8 @@ export class Context {
             const { record, relatedToField, relatedTo } = rel;
             // @ts-ignore
             record[relatedToField] = relatedTo.Id;
+            // @ts-ignore
+            record[relatedToField.replace('__c', '__r')] = relatedTo;
         }
     }
 }
@@ -190,7 +192,7 @@ export async function generateSnapshot(context: Context): Promise<void> {
 }
 
 async function updateLookups(context: Context) {
-    console.log('Updating lookup IDs...');
+    console.log('Updating lookups...');
     context.clear();
     const snapshot = await querySnapshotData(context);
     const declaredClasses: Record<string, symbtablesnap__Apex_Class__c> = {};
@@ -209,22 +211,34 @@ async function updateLookups(context: Context) {
             apexClass.symbtablesnap__Extends_Full_Name__c &&
             declaredClasses.hasOwnProperty(apexClass.symbtablesnap__Extends_Full_Name__c)
         ) {
-            apexClass.symbtablesnap__Extends_Class__c = declaredClasses[apexClass.symbtablesnap__Extends_Full_Name__c].Id;
+            context.registerRelationship(
+                apexClass,
+                'symbtablesnap__Extends_Class__c',
+                declaredClasses[apexClass.symbtablesnap__Extends_Full_Name__c]
+            );
             context.registerUpsert(apexClass);
         }
         if (
             apexClass.symbtablesnap__Top_Level_Full_Name__c &&
             declaredClasses.hasOwnProperty(apexClass.symbtablesnap__Top_Level_Full_Name__c)
         ) {
-            apexClass.symbtablesnap__Top_Level_Class__c = declaredClasses[apexClass.symbtablesnap__Top_Level_Full_Name__c].Id;
+            context.registerRelationship(
+                apexClass,
+                'symbtablesnap__Top_Level_Class__c',
+                declaredClasses[apexClass.symbtablesnap__Top_Level_Full_Name__c]
+            );
             context.registerUpsert(apexClass);
         }
     }
     for (let implementation of snapshot.interfaceImplementations) {
         if (declaredClasses[implementation.symbtablesnap__Implements__c!]) {
-            implementation.symbtablesnap__Implements_Interface__c = declaredClasses[implementation.symbtablesnap__Implements__c!]?.Id;
+            context.registerRelationship(
+                implementation,
+                'symbtablesnap__Implements_Interface__c',
+                declaredClasses[implementation.symbtablesnap__Implements__c!]
+            );
+            context.registerUpsert(implementation);
         }
-        context.registerUpsert(implementation);
     }
     for (let methodReference of snapshot.methodReferences) {
         const potentialMethods: symbtablesnap__Method__c[] = methodsByNames[methodReference.symbtablesnap__Referenced_Method_Name__c!];
@@ -239,22 +253,21 @@ async function updateLookups(context: Context) {
                 potentialMethod.symbtablesnap__Class__r!.symbtablesnap__Namespace_Prefix__c ==
                     methodReference.symbtablesnap__Referenced_Namespace__c
             ) {
-                methodReference.symbtablesnap__Referenced_Method__c = potentialMethod.Id;
+                context.registerRelationship(methodReference, 'symbtablesnap__Referenced_Method__c', potentialMethod);
                 context.registerUpsert(methodReference);
             }
         }
     }
     await context.commit();
-    await updateMethodToMethodReferences(context);
+    await updateMethodToMethodReferences(context, snapshot);
 }
 
-async function updateMethodToMethodReferences(context: Context) {
+async function updateMethodToMethodReferences(context: Context, snapshot: SnapshotData) {
     console.log('Updating method to method reference...');
     context.clear();
-    const snapshot = await querySnapshotData(context);
 
-    // OK in MethodReferenceGenerator => create entry for each location in (references)
-    // OK in MethodGenerator => create Method_Reference__c records for each location in (references)
+    // TODO in MethodReferenceGenerator => create entry for each location in (references)
+    // TODO in MethodGenerator => create Method_Reference__c records for each location in (references)
 
     // TODO query:Method_Reference__c => Used_By_Class__c != null => look at references
     // find and populate Used_By_Method__c,
@@ -270,13 +283,12 @@ async function updateMethodToMethodReferences(context: Context) {
         }
     }
     await context.commit();
-    await updateReferencesScore(context);
+    await updateReferencesScore(context, snapshot);
 }
 
-async function updateReferencesScore(context: Context) {
+async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
     console.log('Calculating and updating reference scores...');
     context.clear();
-    const snapshot = await querySnapshotData(context);
     const graph = buildGraph(snapshot);
     for (let apexTrigger of snapshot.apexTriggers) {
         if (apexTrigger.symbtablesnap__Is_Active__c) {
@@ -285,10 +297,28 @@ async function updateReferencesScore(context: Context) {
         }
     }
     for (let apexClass of snapshot.apexClasses) {
+        if (apexClass.symbtablesnap__Is_Test__c) {
+            graph.getNode(apexClass).addToScore(100, 0.1);
+        }
+        if (apexClass.symbtablesnap__Access_Modifier__c === 'global' && apexClass.symbtablesnap__Namespace_Prefix__c) {
+            graph.getNode(apexClass).addToScore(100, 100);
+        }
         context.registerUpsert(apexClass);
     }
 
     for (let method of snapshot.methods) {
+        if (method.symbtablesnap__Is_Test__c) {
+            graph.getNode(method).addToScore(100, 0.1);
+        }
+        if (
+            method.symbtablesnap__Class__r!.symbtablesnap__Is_Apex_Job_Enqueued__c &&
+            method.symbtablesnap__Method_Name__c === 'execute' &&
+            method.symbtablesnap__Signature__c === 'execute(QueueableContext): void'
+        ) {
+            graph.getNode(method).addToScore(100, 100);
+        }
+        if (method.symbtablesnap__Access_Modifier__c === 'global' && method.symbtablesnap__Class__r?.symbtablesnap__Namespace_Prefix__c) {
+        }
         context.registerUpsert(method);
     }
 
@@ -304,12 +334,6 @@ async function updateReferencesScore(context: Context) {
     // methods:references[]:{line,column} => map to externalReference:name(+namespace)
     // externalReference:references[]:{line,column} => map to externalReference:name(+namespace)
     // externalReference:methods:references[]:{line,column} => map to externalReference:name(+namespace)
-
-    // Is Test? => score +100, propagate +0.1
-    // Is Global? => score +100 if it's a packaging org
-
-    // Trigger Active => score +100
-    // Is Scheduled => void execute(SchedulableContext sc) +100
 
     // propagate rules:
     // trigger => method references, variable references

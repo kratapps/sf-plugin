@@ -18,6 +18,7 @@ export class MethodLocalReferenceGenerator {
             Name: method.Name + ' => [' + location.line + ',' + location.column + ']',
             symbtablesnap__Referenced_Class_Name__c: apexClass.symbtablesnap__Class_Name__c,
             symbtablesnap__Referenced_Namespace__c: apexClass.symbtablesnap__Namespace_Prefix__c,
+            symbtablesnap__Referenced_Method_Name__c: method.symbtablesnap__Method_Name__c,
             symbtablesnap__Reference_Line__c: location.line,
             symbtablesnap__Reference_Column__c: location.column
         });

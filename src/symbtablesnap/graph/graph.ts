@@ -14,7 +14,7 @@ type NodeSupportedType = symbtablesnap__Apex_Class__c | symbtablesnap__Apex_Trig
 export class Node {
     private toNodes: Node[] = [];
     private toNodesKeys: Set<string> = new Set<string>();
-    private record: NodeSupportedType;
+    private readonly record: NodeSupportedType;
 
     constructor(record: NodeSupportedType) {
         this.record = record;
@@ -31,17 +31,21 @@ export class Node {
         }
     }
 
-    setScore(score: number) {
+    public setScore(score: number) {
         this.record[IS_REFERENCED_SCORE_FIELD] = score > 100 ? 100 : score;
     }
 
-    public addToScore(scoreToAdd: number, scoreToPropagate: number) {
+    public addToScore(scoreToAdd: number, scoreToPropagate: number, keysProcessed: Set<string> = new Set<string>()) {
+        if (keysProcessed.has(this.record.symbtablesnap__Snapshot_Key__c!)) {
+            return;
+        }
+        keysProcessed.add(this.record.symbtablesnap__Snapshot_Key__c!);
         let score = this.record[IS_REFERENCED_SCORE_FIELD] as number;
         score = score == null ? 0 : score;
         this.setScore(score + scoreToAdd);
         if (scoreToPropagate != null && scoreToPropagate != 0) {
             for (let child of this.toNodes) {
-                child.addToScore(scoreToPropagate, scoreToPropagate);
+                child.addToScore(scoreToPropagate, scoreToPropagate, keysProcessed);
             }
         }
     }
