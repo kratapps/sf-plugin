@@ -1,0 +1,8 @@
+SELECT 
+        Id, 
+        Name, 
+        symbtablesnap__Snapshot_Key__c, 
+        symbtablesnap__Is_Active__c, 
+        symbtablesnap__Is_Referenced_Score__c
+FROM symbtablesnap__Apex_Trigger__c
+WHERE symbtablesnap__Snapshot__c = '${snapshotId}'

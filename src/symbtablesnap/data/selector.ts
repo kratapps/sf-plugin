@@ -7,34 +7,67 @@ import {
     symbtablesnap__Property__c
 } from '../../types/symbtalesnap.js';
 import { Connection } from '@salesforce/core/lib/org/connection.js';
-import { queryAll } from '../../utils/salesforce.js';
+import { queryAll, queryAllTooling } from '../../utils/salesforce.js';
+import { AsyncApexJob, Organization } from '../../types/standard.js';
+import { ApexClassMember, ApexTriggerMember } from '../../types/tooling.js';
+import { QueryLoader } from '../../utils/queryLoader.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class Selector {
     conn: Connection;
+    queryLoader: QueryLoader;
 
     constructor(conn: Connection) {
         this.conn = conn;
+        this.queryLoader = new QueryLoader(path.join(__dirname, '../../queries/'));
+    }
+
+    async queryOrganization(): Promise<Organization> {
+        const result = await this.conn.query<Organization>('SELECT Id, NamespacePrefix FROM Organization LIMIT 1');
+        return result.records[0];
+    }
+
+    async queryApexClassMembers(
+        metadataContainerId: string,
+        namespace: string | null,
+        callback: (members: ApexClassMember[]) => Promise<void>
+    ): Promise<void> {
+        const query = await this.queryLoader.loadQuery('apexClassMembers.soql', {
+            namespace,
+            metadataContainerId
+        });
+        await queryAllTooling<ApexClassMember>(this.conn, query, async (result) => {
+            await callback(result.records);
+        });
+    }
+
+    async queryApexTriggerMembers(
+        metadataContainerId: string,
+        namespace: string | null,
+        callback: (members: ApexTriggerMember[]) => Promise<void>
+    ): Promise<void> {
+        const query = await this.queryLoader.loadQuery('apexTriggerMembers.soql', {
+            namespace,
+            metadataContainerId
+        });
+        await queryAllTooling<ApexTriggerMember>(this.conn, query, async (result) => {
+            await callback(result.records);
+        });
+    }
+
+    async queryEnqueuedJobIds(): Promise<Set<string>> {
+        const query = await this.queryLoader.loadQuery('enqueuedJobs.soql');
+        const jobs = await this.conn.query<AsyncApexJob>(query);
+        return new Set(jobs.records.map((it) => it.ApexClassId));
     }
 
     async queryApexClasses(snapshotId: string): Promise<symbtablesnap__Apex_Class__c[]> {
-        const query = `
-            SELECT 
-                Id,
-                symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Class_ID__c,
-                symbtablesnap__Class_Name__c,
-                symbtablesnap__Full_Name__c,
-                symbtablesnap__Symbol_Table_Available__c,
-                symbtablesnap__Extends_Full_Name__c,
-                symbtablesnap__Top_Level_Full_Name__c,
-                symbtablesnap__Is_Test__c,
-                symbtablesnap__Modifiers__c,
-                symbtablesnap__Access_Modifier__c,
-                symbtablesnap__Is_Referenced_Score__c,
-                symbtablesnap__Is_Top_Level_Class__c,
-                symbtablesnap__Number_of_Methods__c
-            FROM symbtablesnap__Apex_Class__c
-            WHERE symbtablesnap__Snapshot__c = '${snapshotId}'`;
+        const query = await this.queryLoader.loadQuery('apexClasses.soql', {
+            snapshotId
+        });
         const records: symbtablesnap__Apex_Class__c[] = [];
         await queryAll<symbtablesnap__Apex_Class__c>(this.conn, query, async (result) => {
             records.push(...result.records);
@@ -43,10 +76,9 @@ export class Selector {
     }
 
     async queryApexTriggers(snapshotId: string): Promise<symbtablesnap__Apex_Trigger__c[]> {
-        const query = `
-            SELECT Id, Name, symbtablesnap__Snapshot_Key__c, symbtablesnap__Is_Active__c, symbtablesnap__Is_Referenced_Score__c
-            FROM symbtablesnap__Apex_Trigger__c
-            WHERE symbtablesnap__Snapshot__c = '${snapshotId}'`;
+        const query = await this.queryLoader.loadQuery('apexTriggers.soql', {
+            snapshotId
+        });
         const records: symbtablesnap__Apex_Trigger__c[] = [];
         await queryAll<symbtablesnap__Apex_Trigger__c>(this.conn, query, async (result) => {
             records.push(...result.records);
@@ -55,24 +87,9 @@ export class Selector {
     }
 
     async queryInterfaceImplementations(snapshotId: string): Promise<symbtablesnap__Interface_Implementation__c[]> {
-        const query = `
-            SELECT
-                Id,
-                Name,
-                symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Implements__c,
-                symbtablesnap__Implements_Interface__c,
-                symbtablesnap__Implements_Interface__r.Id,
-                symbtablesnap__Implements_Interface__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Implements_Interface__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Implements_Interface__r.symbtablesnap__Class_Name__c,
-                symbtablesnap__Implementation_Class__c,
-                symbtablesnap__Implementation_Class__r.Id,
-                symbtablesnap__Implementation_Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Implementation_Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Implementation_Class__r.symbtablesnap__Class_Name__c
-            FROM symbtablesnap__Interface_Implementation__c
-            WHERE symbtablesnap__Snapshot__c = '${snapshotId}'`;
+        const query = await this.queryLoader.loadQuery('interfaceImplementations.soql', {
+            snapshotId
+        });
         const records: symbtablesnap__Interface_Implementation__c[] = [];
         await queryAll<symbtablesnap__Interface_Implementation__c>(this.conn, query, async (result) => {
             records.push(...result.records);
@@ -81,28 +98,9 @@ export class Selector {
     }
 
     async queryMethods(snapshotId: string): Promise<symbtablesnap__Method__c[]> {
-        const query = `
-            SELECT
-                Id,
-                symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Signature__c,
-                symbtablesnap__Method_Name__c,
-                symbtablesnap__Is_Referenced_Score__c,
-                symbtablesnap__Location_Line__c,
-                symbtablesnap__Location_Column__c,
-                symbtablesnap__Is_Test__c,
-                symbtablesnap__Class__r.Id,
-                symbtablesnap__Class__r.symbtablesnap__Is_Apex_Job_Enqueued__c,
-                symbtablesnap__Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Class__r.symbtablesnap__Class_Name__c,
-                symbtablesnap__Class__r.symbtablesnap__Class_ID__c,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.Id,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Class_Name__c
-            FROM symbtablesnap__Method__c
-            WHERE symbtablesnap__Snapshot__c = '${snapshotId}'`;
+        const query = await this.queryLoader.loadQuery('methods.soql', {
+            snapshotId
+        });
         const records: symbtablesnap__Method__c[] = [];
         await queryAll<symbtablesnap__Method__c>(this.conn, query, async (result) => {
             records.push(...result.records);
@@ -111,30 +109,9 @@ export class Selector {
     }
 
     async queryProperties(snapshotId: string): Promise<symbtablesnap__Property__c[]> {
-        const query = `
-            SELECT
-                Id,
-                symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Location_Line__c,
-                symbtablesnap__Location_Column__c,
-                symbtablesnap__Class__c,
-                symbtablesnap__Class__r.Id,
-                symbtablesnap__Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Class__r.symbtablesnap__Class_Name__c,
-                symbtablesnap__Class__r.symbtablesnap__Class_ID__c,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.Id,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Class_Name__c,
-                symbtablesnap__Trigger__c,
-                symbtablesnap__Trigger__r.Id,
-                symbtablesnap__Trigger__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Trigger__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Trigger__r.symbtablesnap__Trigger_Name__c,
-                symbtablesnap__Trigger__r.symbtablesnap__Trigger_ID__c
-            FROM symbtablesnap__Property__c
-            WHERE symbtablesnap__Snapshot__c = '${snapshotId}'`;
+        const query = await this.queryLoader.loadQuery('properties.soql', {
+            snapshotId
+        });
         const records: symbtablesnap__Property__c[] = [];
         await queryAll<symbtablesnap__Property__c>(this.conn, query, async (result) => {
             records.push(...result.records);
@@ -143,41 +120,9 @@ export class Selector {
     }
 
     async queryMethodReferences(snapshotId: string): Promise<symbtablesnap__Method_Reference__c[]> {
-        const query = `
-            SELECT 
-                Id,
-                symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Referenced_Class_Name__c,
-                symbtablesnap__Referenced_Namespace__c,
-                symbtablesnap__Reference_Line__c,
-                symbtablesnap__Reference_Column__c,
-                symbtablesnap__Is_External__c,
-                symbtablesnap__Referenced_Method_Name__c,
-                symbtablesnap__Referenced_Method__c,
-                symbtablesnap__Referenced_Method__r.Id,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.Id,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Class_Name__c,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.Id,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Referenced_Method__r.symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Class_Name__c,
-                symbtablesnap__Used_By_Class__c,
-                symbtablesnap__Used_By_Class__r.Id,
-                symbtablesnap__Used_By_Class__r.symbtablesnap__Class_ID__c,
-                symbtablesnap__Used_By_Class__r.symbtablesnap__Class_Name__c,
-                symbtablesnap__Used_By_Class__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Used_By_Class__r.symbtablesnap__Namespace_Prefix__c,
-                symbtablesnap__Used_By_Trigger__c,
-                symbtablesnap__Used_By_Trigger__r.Id,
-                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Trigger_ID__c,
-                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Trigger_Name__c,
-                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Snapshot_Key__c,
-                symbtablesnap__Used_By_Trigger__r.symbtablesnap__Namespace_Prefix__c
-            FROM symbtablesnap__Method_Reference__c
-            WHERE symbtablesnap__Snapshot__c = '${snapshotId}'`;
+        const query = await this.queryLoader.loadQuery('methodReferences.soql', {
+            snapshotId
+        });
         const records: symbtablesnap__Property__c[] = [];
         await queryAll<symbtablesnap__Property__c>(this.conn, query, async (result) => {
             records.push(...result.records);

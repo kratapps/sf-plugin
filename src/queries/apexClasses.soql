@@ -1,0 +1,17 @@
+SELECT
+        Id,
+        symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Class_ID__c,
+        symbtablesnap__Class_Name__c,
+        symbtablesnap__Full_Name__c,
+        symbtablesnap__Symbol_Table_Available__c,
+        symbtablesnap__Extends_Full_Name__c,
+        symbtablesnap__Top_Level_Full_Name__c,
+        symbtablesnap__Is_Test__c,
+        symbtablesnap__Modifiers__c,
+        symbtablesnap__Access_Modifier__c,
+        symbtablesnap__Is_Referenced_Score__c,
+        symbtablesnap__Is_Top_Level_Class__c,
+        symbtablesnap__Number_of_Methods__c
+FROM symbtablesnap__Apex_Class__c
+WHERE symbtablesnap__Snapshot__c = '${snapshotId}'

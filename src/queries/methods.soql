@@ -1,0 +1,21 @@
+SELECT
+        Id,
+        symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Signature__c,
+        symbtablesnap__Method_Name__c,
+        symbtablesnap__Is_Referenced_Score__c,
+        symbtablesnap__Location_Line__c,
+        symbtablesnap__Location_Column__c,
+        symbtablesnap__Is_Test__c,
+        symbtablesnap__Class__r.Id,
+        symbtablesnap__Class__r.symbtablesnap__Is_Apex_Job_Enqueued__c,
+        symbtablesnap__Class__r.symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Class__r.symbtablesnap__Namespace_Prefix__c,
+        symbtablesnap__Class__r.symbtablesnap__Class_Name__c,
+        symbtablesnap__Class__r.symbtablesnap__Class_ID__c,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.Id,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Namespace_Prefix__c,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Class_Name__c
+FROM symbtablesnap__Method__c
+WHERE symbtablesnap__Snapshot__c = '${snapshotId}'

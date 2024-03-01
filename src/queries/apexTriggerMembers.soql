@@ -1,0 +1,11 @@
+SELECT 
+        FullName, 
+        ContentEntityId, 
+        ContentEntity.Name, 
+        ContentEntity.NamespacePrefix, 
+        ContentEntity.Status, 
+        SymbolTable 
+FROM ApexTriggerMember 
+WHERE IsDeleted = FALSE AND 
+ContentEntity.NamespacePrefix = '${namespace}' AND 
+MetadataContainerId = '${metadataContainerId}'

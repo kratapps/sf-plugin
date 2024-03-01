@@ -1,0 +1,17 @@
+SELECT
+        Id,
+        Name,
+        symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Implements__c,
+        symbtablesnap__Implements_Interface__c,
+        symbtablesnap__Implements_Interface__r.Id,
+        symbtablesnap__Implements_Interface__r.symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Implements_Interface__r.symbtablesnap__Namespace_Prefix__c,
+        symbtablesnap__Implements_Interface__r.symbtablesnap__Class_Name__c,
+        symbtablesnap__Implementation_Class__c,
+        symbtablesnap__Implementation_Class__r.Id,
+        symbtablesnap__Implementation_Class__r.symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Implementation_Class__r.symbtablesnap__Namespace_Prefix__c,
+        symbtablesnap__Implementation_Class__r.symbtablesnap__Class_Name__c
+FROM symbtablesnap__Interface_Implementation__c
+WHERE symbtablesnap__Snapshot__c = '${snapshotId}'

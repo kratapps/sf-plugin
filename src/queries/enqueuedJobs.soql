@@ -1,0 +1,4 @@
+SELECT ApexClassId
+FROM AsyncApexJob
+WHERE JobType = 'ScheduledApex' AND 
+CronTriggerId IN (SELECT Id FROM CronTrigger WHERE CronJobDetail.JobType = '7' AND NextFireTime != NULL)

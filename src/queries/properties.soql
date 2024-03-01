@@ -1,0 +1,23 @@
+SELECT
+        Id,
+        symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Location_Line__c,
+        symbtablesnap__Location_Column__c,
+        symbtablesnap__Class__c,
+        symbtablesnap__Class__r.Id,
+        symbtablesnap__Class__r.symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Class__r.symbtablesnap__Namespace_Prefix__c,
+        symbtablesnap__Class__r.symbtablesnap__Class_Name__c,
+        symbtablesnap__Class__r.symbtablesnap__Class_ID__c,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.Id,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Namespace_Prefix__c,
+        symbtablesnap__Class__r.symbtablesnap__Top_Level_Class__r.symbtablesnap__Class_Name__c,
+        symbtablesnap__Trigger__c,
+        symbtablesnap__Trigger__r.Id,
+        symbtablesnap__Trigger__r.symbtablesnap__Snapshot_Key__c,
+        symbtablesnap__Trigger__r.symbtablesnap__Namespace_Prefix__c,
+        symbtablesnap__Trigger__r.symbtablesnap__Trigger_Name__c,
+        symbtablesnap__Trigger__r.symbtablesnap__Trigger_ID__c
+FROM symbtablesnap__Property__c
+WHERE symbtablesnap__Snapshot__c = '${snapshotId}'

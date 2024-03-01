@@ -101,6 +101,7 @@
       "command": "tsc -p . --pretty --incremental",
       "files": [
         "src/**/*.ts",
+        "src/**/*.soql",
         "**/tsconfig.json",
         "messages/**"
       ],
@@ -108,7 +109,13 @@
         "lib/**",
         "*.tsbuildinfo"
       ],
-      "clean": "if-file-deleted"
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "queries"
+      ]
+    },
+    "queries": {
+      "command": "cp -r src/queries/ lib/queries/"
     },
     "format": {
       "command": "prettier --write \"+(src|test|schemas)/**/*.+(ts|js|json)|command-snapshot.json\"",
