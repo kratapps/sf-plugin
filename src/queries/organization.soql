@@ -1,0 +1,1 @@
+SELECT Id, NamespacePrefix FROM Organization LIMIT 1

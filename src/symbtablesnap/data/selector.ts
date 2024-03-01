@@ -26,7 +26,8 @@ export class Selector {
     }
 
     async queryOrganization(): Promise<Organization> {
-        const result = await this.conn.query<Organization>('SELECT Id, NamespacePrefix FROM Organization LIMIT 1');
+        const query = await this.queryLoader.loadQuery('organization.soql');
+        const result = await this.conn.query<Organization>(query);
         return result.records[0];
     }
 

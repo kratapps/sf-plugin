@@ -1,0 +1,10 @@
+SELECT 
+        FullName,
+        Body,
+        ContentEntityId, 
+        ContentEntity.Name, 
+        ContentEntity.NamespacePrefix
+FROM ApexClassMember 
+WHERE IsDeleted = FALSE AND 
+ContentEntity.NamespacePrefix = '${namespace}' AND 
+MetadataContainerId = '${metadataContainerId}'
