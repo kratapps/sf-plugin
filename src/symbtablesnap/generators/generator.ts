@@ -310,7 +310,6 @@ async function updateLookups(context: Context) {
 
 async function updateMethodToMethodReferences(context: Context) {
     console.log('Updating method to method references...');
-    // context.clear();
     function findItem(items: ClassItem[], lineNumber: number, type: 'method' | 'property'): Optional<ClassItem> {
         let foundItem: Optional<ClassItem> = undefined;
         for (let i = 0; items && i < items.length; i++) {
@@ -358,7 +357,6 @@ async function updateMethodToMethodReferences(context: Context) {
 
 async function updateReferencesScore(context: Context) {
     console.log('Calculating and updating reference scores...');
-    // context.clear();
     const graph = buildGraph(context);
     for (let apexTrigger of context.apexTriggers()) {
         if (apexTrigger.symbtablesnap__Is_Active__c) {
@@ -434,7 +432,6 @@ async function updateReferencesScore(context: Context) {
 async function querySnapshotData(context: Context): Promise<void> {
     context.recordsByKey = {};
     const selector = new Selector(context.conn);
-    // const snapshot = new SnapshotData();
     const snapshotId = context.snapshot.Id!;
     context.recordsByType['symbtablesnap__Apex_Class__c'] = await selector.queryApexClasses(snapshotId);
     context.recordsByType['symbtablesnap__Apex_Trigger__c'] = await selector.queryApexTriggers(snapshotId);
