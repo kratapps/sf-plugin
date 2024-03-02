@@ -20,8 +20,7 @@ export class ApexClassGenerator {
             const hash = hashCode(member.ContentEntityId);
             const apexClass: symbtablesnap__Apex_Class__c = {
                 attributes: {
-                    type: 'symbtablesnap__Apex_Class__c',
-                    url: ''
+                    type: 'symbtablesnap__Apex_Class__c'
                 },
                 Name: hasSymbolTable ? (symbolTable.namespace ? symbolTable.namespace + '.' : '') + symbolTable.name : member.FullName,
                 symbtablesnap__Full_Name__c: hasSymbolTable

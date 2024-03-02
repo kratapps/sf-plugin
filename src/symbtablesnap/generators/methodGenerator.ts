@@ -74,8 +74,7 @@ export class MethodGenerator {
         ]);
         const method: symbtablesnap__Method__c = {
             attributes: {
-                type: 'symbtablesnap__Method__c',
-                url: ''
+                type: 'symbtablesnap__Method__c'
             },
             Name: methodName + '(' + params.join(', ') + ')',
             symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':' + (isConstructor ? 'Constructor' : 'Method') + ':' + hash,

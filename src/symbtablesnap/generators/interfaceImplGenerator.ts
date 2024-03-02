@@ -19,8 +19,7 @@ export class InterfaceImplGenerator {
             const hash = hashCode([apexClass.symbtablesnap__Class_ID__c, apexClass.symbtablesnap__Class_Name__c, interfaceName]);
             const impl: symbtablesnap__Interface_Implementation__c = {
                 attributes: {
-                    type: 'symbtablesnap__Interface_Implementation__c',
-                    url: ''
+                    type: 'symbtablesnap__Interface_Implementation__c'
                 },
                 Name: apexClass.symbtablesnap__Class_Name__c + ' implements ' + interfaceName,
                 symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':InterfaceImpl:' + hash,

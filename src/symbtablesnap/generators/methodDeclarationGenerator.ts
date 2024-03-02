@@ -28,8 +28,7 @@ export class MethodDeclarationGenerator {
         const declarationHash = hashCode([name, type]);
         let declaration: symbtablesnap__Declaration__c = {
             attributes: {
-                type: 'symbtablesnap__Declaration__c',
-                url: ''
+                type: 'symbtablesnap__Declaration__c'
             },
             Name: name,
             symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':' + type + ':' + declarationHash,
@@ -40,8 +39,7 @@ export class MethodDeclarationGenerator {
         const methodDeclarationHash = hashCode([method.symbtablesnap__Snapshot_Key__c, declaration.symbtablesnap__Snapshot_Key__c]);
         const methodDeclaration: symbtablesnap__Method_Declaration__c = {
             attributes: {
-                type: 'symbtablesnap__Method_Declaration__c',
-                url: ''
+                type: 'symbtablesnap__Method_Declaration__c'
             },
             Name: (type == 'Annotation' ? '@' : '') + declaration.Name + ' ' + method.Name,
             symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':Declaration:' + methodDeclarationHash,

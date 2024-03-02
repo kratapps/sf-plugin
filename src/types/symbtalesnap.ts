@@ -52,7 +52,7 @@ export type RecordsByType = {
 
 export type Attributes = {
     type: SnapshotSObjectTypeName;
-    url: string;
+    url?: string;
 };
 
 export type SnapshotSObjectFieldType = Attributes | AllSObjectTypes | number | boolean | DateString | BlobString | string | null;
@@ -113,7 +113,6 @@ export function isSnapshotRecord(value: unknown): value is SnapshotRecord {
 export interface symbtablesnap__Apex_Class__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Apex_Class__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Access_Modifier__c: string | null;
@@ -142,7 +141,6 @@ export interface symbtablesnap__Apex_Class__c extends SnapshotRecord {
 export interface symbtablesnap__Apex_Trigger__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Apex_Trigger__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Snapshot__c?: string;
@@ -157,7 +155,6 @@ export interface symbtablesnap__Apex_Trigger__c extends SnapshotRecord {
 export interface symbtablesnap__Declaration__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Declaration__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Type__c: string;
@@ -167,7 +164,6 @@ export interface symbtablesnap__Declaration__c extends SnapshotRecord {
 export interface symbtablesnap__Interface_Implementation__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Interface_Implementation__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Implementation_Class__c?: string;
@@ -181,7 +177,6 @@ export interface symbtablesnap__Interface_Implementation__c extends SnapshotReco
 export interface symbtablesnap__Method_Declaration__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Method_Declaration__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Method__c?: string;
@@ -193,7 +188,6 @@ export interface symbtablesnap__Method_Declaration__c extends SnapshotRecord {
 export interface symbtablesnap__Method_Reference__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Method_Reference__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Is_External__c: boolean;
@@ -216,7 +210,6 @@ export interface symbtablesnap__Method_Reference__c extends SnapshotRecord {
 export interface symbtablesnap__Method__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Method__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Class__c?: string;
@@ -240,7 +233,6 @@ export interface symbtablesnap__Method__c extends SnapshotRecord {
 export interface symbtablesnap__Property__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Property__c';
-        url: string;
     };
     Name: string;
     symbtablesnap__Snapshot__c?: string;
@@ -255,7 +247,6 @@ export interface symbtablesnap__Property__c extends SnapshotRecord {
 export interface symbtablesnap__Symbol_Table_Snapshot__c extends SnapshotRecord {
     attributes: {
         type: 'symbtablesnap__Symbol_Table_Snapshot__c';
-        url: string;
     };
     symbtablesnap__Is_Latest__c: boolean;
     symbtablesnap__Org_Namespace_Prefix__c: string | null;

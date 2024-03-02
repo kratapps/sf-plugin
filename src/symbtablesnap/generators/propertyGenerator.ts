@@ -37,8 +37,7 @@ export class PropertyGenerator {
                 ]);
                 const property: symbtablesnap__Property__c = {
                     attributes: {
-                        type: 'symbtablesnap__Property__c',
-                        url: ''
+                        type: 'symbtablesnap__Property__c'
                     },
                     Name: entityName + ' having ' + symbolProperty.name + ' (' + symbolProperty.type + ')',
                     symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':Property:' + hash,

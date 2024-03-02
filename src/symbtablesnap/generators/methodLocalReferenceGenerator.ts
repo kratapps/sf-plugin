@@ -22,8 +22,7 @@ export class MethodLocalReferenceGenerator {
         ]);
         const methodRef: symbtablesnap__Method_Reference__c = {
             attributes: {
-                type: 'symbtablesnap__Method_Reference__c',
-                url: ''
+                type: 'symbtablesnap__Method_Reference__c'
             },
             symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':LocalMethodRef:' + hash,
             Name: method.Name + ' => [' + location.line + ',' + location.column + ']',

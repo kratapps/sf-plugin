@@ -24,8 +24,7 @@ export class InnerClassGenerator {
             const hash = hashCode([parent.symbtablesnap__Class_ID__c, symbolTable.name, parent.symbtablesnap__Full_Name__c]);
             const apexClass: symbtablesnap__Apex_Class__c = {
                 attributes: {
-                    type: 'symbtablesnap__Apex_Class__c',
-                    url: ''
+                    type: 'symbtablesnap__Apex_Class__c'
                 },
                 Name: parent.symbtablesnap__Full_Name__c + '.' + symbolTable.name,
                 symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':InnerClass:' + hash,
@@ -45,6 +44,7 @@ export class InnerClassGenerator {
                 symbtablesnap__Is_Referenced_Score__c: 0,
                 symbtablesnap__Is_Apex_Job_Enqueued__c: false
             };
+            context.registerRelationship(apexClass, 'symbtablesnap__Top_Level_Class__c', parent);
             context.registerRelationship(apexClass, 'symbtablesnap__Snapshot__c', context.snapshot);
             context.registerUpsert(apexClass);
             await context.interfaceImplGenerator.generate(apexClass);

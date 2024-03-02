@@ -49,8 +49,7 @@ export async function newContext(metadataContainerId: string, targetConn: Connec
     const org = await new Selector(targetConn).queryOrganization();
     const snapshot: symbtablesnap__Symbol_Table_Snapshot__c = {
         attributes: {
-            type: 'symbtablesnap__Symbol_Table_Snapshot__c',
-            url: ''
+            type: 'symbtablesnap__Symbol_Table_Snapshot__c'
         },
         symbtablesnap__Snapshot_Key__c: `${hashCode(new Date().toISOString())}`,
         symbtablesnap__Is_Latest__c: false,
@@ -80,6 +79,7 @@ export class Context {
     propertyGenerator = new PropertyGenerator(this);
 
     toUpsert: { [key: string]: SnapshotRecord[] } = {};
+    toUpsertKeysByType: { [key in string]: Set<string> } = {};
     relationships: Relationship[] = [];
     recordsByKey: { [key in string]: SnapshotRecord } = {};
     recordsByType: RecordsByType = {};
@@ -101,6 +101,7 @@ export class Context {
         this.clear();
         for (let type of sObjectOrder) {
             this.recordsByType[type] = [];
+            this.toUpsertKeysByType[type] = new Set<string>();
         }
     }
 
@@ -131,9 +132,8 @@ export class Context {
     clear() {
         for (let sObjectType of sObjectOrder) {
             this.toUpsert[sObjectType] = [];
-            this.recordsByType[sObjectType] = [];
+            this.toUpsertKeysByType[sObjectType] = new Set<string>();
         }
-        this.relationships = [];
     }
 
     async markClassesAsEnqueued(): Promise<void> {
@@ -141,9 +141,6 @@ export class Context {
     }
 
     registerRelationship(record: SnapshotRecord, relatedToField: string, relatedTo: SnapshotRecord) {
-        if (!relatedTo) {
-            throw Error('ups');
-        }
         this.relationships.push({
             record,
             relatedToField,
@@ -159,23 +156,26 @@ export class Context {
         if (isString(record.Name)) {
             record.Name = record.Name.substring(0, 80);
         }
+        const type: SnapshotSObjectTypeName = record.attributes.type;
         if (this.recordsByKey.hasOwnProperty(key)) {
+            const existingRecord = this.recordsByKey[key];
             for (let field of Object.keys(record)) {
                 const value = record[field];
                 if (value !== undefined) {
-                    const existingRecord = this.recordsByKey[key];
-                    if (existingRecord) {
-                        existingRecord[field] = value;
-                    }
+                    existingRecord[field] = value;
                 }
             }
+            if (!this.toUpsertKeysByType[type].has(key)) {
+                this.toUpsertKeysByType[type].add(key);
+                this.toUpsert[type].push(existingRecord);
+            }
         } else {
-            const type: SnapshotSObjectTypeName = record.attributes.type;
             if (!isString(type) || !sObjectOrder.includes(type)) {
                 console.error(record);
                 throw Error('Unsupported sobject.');
             }
             this.toUpsert[type].push(record);
+            this.toUpsertKeysByType[type].add(key);
             this.recordsByKey[key] = record;
             const records: AllSObjectTypes[] = this.recordsByType[record.attributes.type]!;
             records.push(record);
@@ -210,6 +210,7 @@ export class Context {
                     }
                 });
                 this.toUpsert[sObjectType] = [];
+                this.toUpsertKeysByType[sObjectType] = new Set<string>();
             }
         }
     }
@@ -217,7 +218,6 @@ export class Context {
     private resolveRelationships() {
         for (let rel of this.relationships) {
             const { record, relatedToField, relatedTo } = rel;
-            // @ts-ignore
             record[relatedToField] = relatedTo.Id;
             // @ts-ignore
             record[relatedToField.replace('__c', '__r')] = relatedTo;
@@ -226,7 +226,9 @@ export class Context {
 }
 
 export async function generateSnapshot(context: Context): Promise<void> {
-    const saveResult = await context.conn.sobject('symbtablesnap__Symbol_Table_Snapshot__c').create(context.snapshot);
+    const snapshotSObject = context.conn.sobject('symbtablesnap__Symbol_Table_Snapshot__c');
+    // @ts-ignore
+    const saveResult = await snapshotSObject.create(context.snapshot);
     context.snapshot.Id = saveResult.id!;
     console.log(`Snapshot record created: ${context.snapshot.Id}`);
     console.log('Querying AsyncApexJob to search for scheduled apex classes...');
@@ -239,15 +241,15 @@ export async function generateSnapshot(context: Context): Promise<void> {
     await context.targetSelector.queryApexTriggerMembers(context.metadataContainerId, orgsNamespace, async (members) => {
         await context.apexTriggerGenerator.generate(members);
     });
-    context.registerUpsert(context.snapshot);
+    // context.registerUpsert(context.snapshot);
     await context.commit();
     await updateLookups(context);
 }
 
 async function updateLookups(context: Context) {
     console.log('Trying to match and update lookups...');
-    context.clear();
-    await querySnapshotData(context);
+    // context.clear();
+    // await querySnapshotData(context);
     // const snapshot = context.snapshotData;
     const declaredClasses: Record<string, symbtablesnap__Apex_Class__c> = {};
     const methodsByNames: Record<string, symbtablesnap__Method__c[]> = {};
@@ -437,19 +439,20 @@ async function updateReferencesScore(context: Context) {
     await context.commit();
 }
 
-async function querySnapshotData(context: Context): Promise<void> {
-    context.recordsByKey = {};
-    const selector = new Selector(context.conn);
-    const snapshotId = context.snapshot.Id!;
-    context.recordsByType['symbtablesnap__Apex_Class__c'] = await selector.queryApexClasses(snapshotId);
-    context.recordsByType['symbtablesnap__Apex_Trigger__c'] = await selector.queryApexTriggers(snapshotId);
-    context.recordsByType['symbtablesnap__Interface_Implementation__c'] = await selector.queryInterfaceImplementations(snapshotId);
-    context.recordsByType['symbtablesnap__Method__c'] = await selector.queryMethods(snapshotId);
-    context.recordsByType['symbtablesnap__Property__c'] = await selector.queryProperties(snapshotId);
-    context.recordsByType['symbtablesnap__Method_Reference__c'] = await selector.queryMethodReferences(snapshotId);
-    for (let type of sObjectOrder) {
-        for (let record of context.recordsByType[type] ?? []) {
-            context.recordsByKey[record.symbtablesnap__Snapshot_Key__c] = record;
-        }
-    }
-}
+// async function querySnapshotData(context: Context): Promise<void> {
+//     // context.recordsByKey = {};
+//     const selector = new Selector(context.conn);
+//     const snapshotId = context.snapshot.Id!;
+//     context.recordsByType['symbtablesnap__Apex_Class__c'] = await selector.queryApexClasses(snapshotId);
+//     context.recordsByType['symbtablesnap__Apex_Trigger__c'] = await selector.queryApexTriggers(snapshotId);
+//     context.recordsByType['symbtablesnap__Interface_Implementation__c'] = await selector.queryInterfaceImplementations(snapshotId);
+//     context.recordsByType['symbtablesnap__Method__c'] = await selector.queryMethods(snapshotId);
+//     context.recordsByType['symbtablesnap__Property__c'] = await selector.queryProperties(snapshotId);
+//     context.recordsByType['symbtablesnap__Method_Reference__c'] = await selector.queryMethodReferences(snapshotId);
+//     for (let type of sObjectOrder) {
+//         console.log('loaded', type, (context.recordsByType[type] ?? []).length);
+//         for (let record of context.recordsByType[type] ?? []) {
+//             context.recordsByKey[record.symbtablesnap__Snapshot_Key__c] = record;
+//         }
+//     }
+// }

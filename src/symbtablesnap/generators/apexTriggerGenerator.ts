@@ -17,8 +17,7 @@ export class ApexTriggerGenerator {
             const hash = hashCode(member.ContentEntityId);
             const apexTrigger: symbtablesnap__Apex_Trigger__c = {
                 attributes: {
-                    type: 'symbtablesnap__Apex_Trigger__c',
-                    url: ''
+                    type: 'symbtablesnap__Apex_Trigger__c'
                 },
                 Name: (symbolTable.namespace ? symbolTable.namespace + '.' : '') + symbolTable.name,
                 symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':ApexTrigger:' + hash,
