@@ -1,7 +1,7 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { compile } from '../../../../../utils/apexCompile.js';
-import { Context, generateSnapshot } from '../../../../../symbtablesnap/generators/generator.js';
+import { generateSnapshot, newContext } from '../../../../../symbtablesnap/generators/generator.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@kratapps/sf-plugin', 'symbol.table.snapshot.generate');
@@ -52,7 +52,8 @@ export default class SymbolTableSnapshotGenerate extends SfCommand<Result> {
             const targetConn = targetOrg.getConnection();
             const conn = snapshotOrg.getConnection();
             const containerId = containerIdFlag ? containerIdFlag : (await compile(snapshotOrg.getConnection('40.0'))).containerId;
-            await generateSnapshot(new Context(containerId, targetConn, conn));
+            const context = await newContext(containerId, targetConn, conn);
+            await generateSnapshot(context);
         } catch (e) {
             console.error(e);
         }

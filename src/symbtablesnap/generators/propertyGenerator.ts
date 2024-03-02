@@ -8,7 +8,6 @@ import {
 } from '../../types/symbtalesnap.js';
 import { hashCode } from '../../utils/hashUtils.js';
 import { SymbolTable } from '../../types/tooling.js';
-import { newProperty } from '../factory/sObjectFactory.js';
 
 export class PropertyGenerator {
     context: Context;
@@ -28,14 +27,24 @@ export class PropertyGenerator {
         const entityName = apexClass ? apexClass.symbtablesnap__Class_Name__c! : apexTrigger?.symbtablesnap__Trigger_Name__c!;
         if (symbolTable.properties != null) {
             for (let symbolProperty of symbolTable.properties) {
-                const property: symbtablesnap__Property__c = newProperty({
+                const hash = hashCode([
+                    entityId,
+                    entityName,
+                    symbolProperty.name,
+                    symbolProperty.type,
+                    symbolProperty.location.line,
+                    symbolProperty.location.column
+                ]);
+                const property: symbtablesnap__Property__c = {
+                    attributes: {
+                        type: 'symbtablesnap__Property__c',
+                        url: ''
+                    },
                     Name: entityName + ' having ' + symbolProperty.name + ' (' + symbolProperty.type + ')',
+                    symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':Property:' + hash,
                     symbtablesnap__Location_Line__c: symbolProperty.location.line,
                     symbtablesnap__Location_Column__c: symbolProperty.location.column
-                });
-                property.Name = property.Name!.substring(0, 80);
-                property.symbtablesnap__Snapshot_Key__c =
-                    context.snapshot.Id + ':Property:' + getHashCode(entityId!, entityName!, property);
+                };
                 context.registerRelationship(property, 'symbtablesnap__Snapshot__c', context.snapshot);
                 if (apexClass != null) {
                     context.registerRelationship(property, 'symbtablesnap__Class__c', apexClass);
@@ -46,14 +55,4 @@ export class PropertyGenerator {
             }
         }
     }
-}
-
-function getHashCode(entityId: string, entityName: string, property: symbtablesnap__Property__c): number {
-    let hash = 7;
-    hash = 31 * hash + hashCode(entityId);
-    hash = 31 * hash + hashCode(entityName);
-    hash = 31 * hash + hashCode(property.Name);
-    hash = 31 * hash + hashCode(property.symbtablesnap__Location_Line__c);
-    hash = 31 * hash + hashCode(property.symbtablesnap__Location_Column__c);
-    return hash;
 }

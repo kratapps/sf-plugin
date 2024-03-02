@@ -1,18 +1,18 @@
-import { SnapshotData } from '../data/snapshotData.js';
 import { Graph } from './graph.js';
+import { Context } from '../generators/generator.js';
 
-export function buildGraph(snapshot: SnapshotData): Graph {
+export function buildGraph(context: Context): Graph {
     const graph = new Graph();
-    for (let apexTrigger of snapshot.apexTriggers) {
+    for (let apexTrigger of context.apexTriggers()) {
         graph.addNode(apexTrigger);
     }
-    for (let apexClass of snapshot.apexClasses) {
+    for (let apexClass of context.apexClasses()) {
         graph.addNode(apexClass);
     }
-    for (let method of snapshot.methods) {
+    for (let method of context.methods()) {
         graph.addNode(method);
     }
-    for (let reference of snapshot.methodReferences) {
+    for (let reference of context.methodReferences()) {
         if (reference.symbtablesnap__Referenced_Method__r != null) {
             if (reference.symbtablesnap__Used_By_Method__r != null) {
                 graph.addRelationship(reference.symbtablesnap__Used_By_Method__r, reference.symbtablesnap__Referenced_Method__r);
@@ -45,7 +45,7 @@ export function buildGraph(snapshot: SnapshotData): Graph {
             }
         }
     }
-    for (let implementation of snapshot.interfaceImplementations) {
+    for (let implementation of context.interfaceImplementations()) {
         if (implementation.symbtablesnap__Implements_Interface__r != null) {
             graph.addRelationship(
                 implementation.symbtablesnap__Implementation_Class__r!,

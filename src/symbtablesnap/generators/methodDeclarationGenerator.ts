@@ -1,8 +1,7 @@
 import { Context } from './generator.js';
-import { symbtablesnap__Declaration__c, symbtablesnap__Method__c } from '../../types/symbtalesnap.js';
+import { symbtablesnap__Declaration__c, symbtablesnap__Method__c, symbtablesnap__Method_Declaration__c } from '../../types/symbtalesnap.js';
 import { Annotation } from '../../types/tooling.js';
 import { hashCode } from '../../utils/hashUtils.js';
-import { newDeclaration, newMethodDeclaration } from '../factory/sObjectFactory.js';
 
 export class MethodDeclarationGenerator {
     context: Context;
@@ -26,36 +25,31 @@ export class MethodDeclarationGenerator {
 
     async generate2(method: symbtablesnap__Method__c, type: string, name: string) {
         const context = this.context;
-        let declaration = newDeclaration({
+        const declarationHash = hashCode([name, type]);
+        let declaration: symbtablesnap__Declaration__c = {
+            attributes: {
+                type: 'symbtablesnap__Declaration__c',
+                url: ''
+            },
             Name: name,
+            symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':' + type + ':' + declarationHash,
             symbtablesnap__Type__c: type
-        });
-        declaration.symbtablesnap__Snapshot_Key__c = context.snapshot.Id + ':' + type + ':' + getDeclarationHashCode(declaration);
+        };
         context.registerRelationship(declaration, 'symbtablesnap__Snapshot__c', context.snapshot);
         declaration = context.registerUpsert(declaration);
-        const methodDeclaration = newMethodDeclaration({
+        const methodDeclarationHash = hashCode([method.symbtablesnap__Snapshot_Key__c, declaration.symbtablesnap__Snapshot_Key__c]);
+        const methodDeclaration: symbtablesnap__Method_Declaration__c = {
+            attributes: {
+                type: 'symbtablesnap__Method_Declaration__c',
+                url: ''
+            },
             Name: (type == 'Annotation' ? '@' : '') + declaration.Name + ' ' + method.Name,
+            symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':Declaration:' + methodDeclarationHash,
             symbtablesnap__Type__c: declaration.symbtablesnap__Type__c
-        });
-        methodDeclaration.Name = methodDeclaration.Name!.substring(0, 80);
-        methodDeclaration.symbtablesnap__Snapshot_Key__c = context.snapshot.Id + ':Declaration:' + getHashCode(method, declaration);
+        };
         context.registerRelationship(methodDeclaration, 'symbtablesnap__Snapshot__c', context.snapshot);
         context.registerRelationship(methodDeclaration, 'symbtablesnap__Method__c', method);
         context.registerRelationship(methodDeclaration, 'symbtablesnap__Declaration__c', declaration);
         context.registerUpsert(methodDeclaration);
     }
-}
-
-function getDeclarationHashCode(declaration: symbtablesnap__Declaration__c): number {
-    let hash = 7;
-    hash = 31 * hash + hashCode(declaration.Name);
-    hash = 31 * hash + hashCode(declaration.symbtablesnap__Type__c);
-    return hash;
-}
-
-function getHashCode(method: symbtablesnap__Method__c, declaration: symbtablesnap__Declaration__c): number {
-    let hash = 7;
-    hash = 31 * hash + hashCode(method.symbtablesnap__Snapshot_Key__c);
-    hash = 31 * hash + hashCode(declaration.symbtablesnap__Snapshot_Key__c);
-    return hash;
 }

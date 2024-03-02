@@ -98,7 +98,7 @@
       ]
     },
     "compile": {
-      "command": "tsc -p . --pretty --incremental",
+      "command": "tsc -p . --pretty --incremental ; mkdir lib/queries/ ; cp -r src/queries/ lib/queries/",
       "files": [
         "src/**/*.ts",
         "src/**/*.soql",
@@ -109,13 +109,7 @@
         "lib/**",
         "*.tsbuildinfo"
       ],
-      "clean": "if-file-deleted",
-      "dependencies": [
-        "queries"
-      ]
-    },
-    "queries": {
-      "command": "cp -r src/queries/ lib/queries/"
+      "clean": "if-file-deleted"
     },
     "format": {
       "command": "prettier --write \"+(src|test|schemas)/**/*.+(ts|js|json)|command-snapshot.json\"",

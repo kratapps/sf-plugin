@@ -1,45 +1,33 @@
 import {
     isMethod,
     isProperty,
-    SnapshotSObjectType,
-    symbtablesnap__Apex_Class__c,
-    symbtablesnap__Apex_Trigger__c,
-    symbtablesnap__Interface_Implementation__c,
+    SnapshotSObjectTypeName,
     symbtablesnap__Method__c,
-    symbtablesnap__Method_Reference__c,
     symbtablesnap__Property__c
 } from '../../types/symbtalesnap.js';
 import { hashCode } from '../../utils/hashUtils.js';
+import { Context } from '../generators/generator.js';
 
-export class SnapshotData {
-    apexClasses: symbtablesnap__Apex_Class__c[] = [];
-    apexTriggers: symbtablesnap__Apex_Trigger__c[] = [];
-    methods: symbtablesnap__Method__c[] = [];
-    properties: symbtablesnap__Property__c[] = [];
-    interfaceImplementations: symbtablesnap__Interface_Implementation__c[] = [];
-    methodReferences: symbtablesnap__Method_Reference__c[] = [];
-
-    getClassItemsByEntityIds(): Record<string, ClassItem[]> {
-        const methodsByIds: Record<string, ClassItem[]> = {};
-        for (let method of this.methods) {
-            // Class ID is same for inner and top-level class.
-            const entityId = method.symbtablesnap__Class__r!.symbtablesnap__Class_ID__c!;
-            if (!methodsByIds.hasOwnProperty(entityId)) {
-                methodsByIds[entityId] = [];
-            }
-            methodsByIds[entityId].push(new ClassItem(method));
+export function getClassItemsByEntityIds(context: Context): Record<string, ClassItem[]> {
+    const methodsByIds: Record<string, ClassItem[]> = {};
+    for (let method of context.methods()) {
+        // Class ID is same for inner and top-level class.
+        const entityId = method.symbtablesnap__Class__r!.symbtablesnap__Class_ID__c;
+        if (!methodsByIds.hasOwnProperty(entityId)) {
+            methodsByIds[entityId] = [];
         }
-        for (let property of this.properties) {
-            const entityId = property.symbtablesnap__Class__c
-                ? property.symbtablesnap__Class__r!.symbtablesnap__Class_ID__c!
-                : property.symbtablesnap__Trigger__r!.symbtablesnap__Trigger_ID__c!;
-            if (!methodsByIds.hasOwnProperty(entityId)) {
-                methodsByIds[entityId] = [];
-            }
-            methodsByIds[entityId].push(new ClassItem(property));
-        }
-        return methodsByIds;
+        methodsByIds[entityId].push(new ClassItem(method));
     }
+    for (let property of context.properties()) {
+        const entityId = property.symbtablesnap__Class__r
+            ? property.symbtablesnap__Class__r.symbtablesnap__Class_ID__c
+            : property.symbtablesnap__Trigger__r!.symbtablesnap__Trigger_ID__c;
+        if (!methodsByIds.hasOwnProperty(entityId)) {
+            methodsByIds[entityId] = [];
+        }
+        methodsByIds[entityId].push(new ClassItem(property));
+    }
+    return methodsByIds;
 }
 
 export class ClassItem {
@@ -71,7 +59,7 @@ export class ClassItem {
         throw Error('Not a property.');
     }
 
-    public getType(): SnapshotSObjectType {
+    public getType(): SnapshotSObjectTypeName {
         return this.isMethod() ? 'symbtablesnap__Method__c' : 'symbtablesnap__Property__c';
     }
 

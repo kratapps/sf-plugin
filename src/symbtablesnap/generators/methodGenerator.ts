@@ -3,7 +3,6 @@ import { symbtablesnap__Apex_Class__c, symbtablesnap__Method__c } from '../../ty
 import { Annotation, Parameter, Position, SymbolTable } from '../../types/tooling.js';
 import { hashCode } from '../../utils/hashUtils.js';
 import { getAccessModifier, hasTestMethodModifier } from '../../utils/generatorUtils.js';
-import { newMethod } from '../factory/sObjectFactory.js';
 
 export class MethodGenerator {
     context: Context;
@@ -63,10 +62,25 @@ export class MethodGenerator {
         const context = this.context;
         const methodName = name;
         const isConstructor = returnType == null;
-        const method = newMethod({
+        const paramTypes: string[] = parameters.map((it) => it.type);
+        const params: string[] = parameters.map((it) => it.type + ' ' + it.name);
+        const hash = hashCode([
+            apexClass.symbtablesnap__Class_ID__c,
+            apexClass.symbtablesnap__Class_Name__c,
+            methodName,
+            returnType,
+            ...paramTypes,
+            `${location.line}-${location.column}`
+        ]);
+        const method: symbtablesnap__Method__c = {
+            attributes: {
+                type: 'symbtablesnap__Method__c',
+                url: ''
+            },
+            Name: methodName + '(' + params.join(', ') + ')',
+            symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':' + (isConstructor ? 'Constructor' : 'Method') + ':' + hash,
             symbtablesnap__Method_Name__c: methodName,
             symbtablesnap__Is_Constructor__c: isConstructor,
-            symbtablesnap__Number_of_Parameters__c: 0,
             symbtablesnap__Is_Overloaded__c: false,
             symbtablesnap__Is_Test__c: hasTestMethodModifier(modifiers),
             symbtablesnap__Is_Referenced__c: false,
@@ -75,24 +89,12 @@ export class MethodGenerator {
             symbtablesnap__Return_Type__c: isConstructor ? apexClass.symbtablesnap__Class_Name__c : returnType,
             symbtablesnap__Is_Referenced_Score__c: 0,
             symbtablesnap__Location_Line__c: location.line,
-            symbtablesnap__Location_Column__c: location.column
-        });
-        const paramTypes: string[] = [];
-        const params: string[] = [];
-        if (parameters != null) {
-            method.symbtablesnap__Number_of_Parameters__c = parameters.length;
-            for (let symbolParam of parameters) {
-                paramTypes.push(symbolParam.type);
-                params.push(symbolParam.type + ' ' + symbolParam.name);
-            }
-        }
-        method.Name = method.symbtablesnap__Method_Name__c + '(' + params.join(', ') + ')';
+            symbtablesnap__Location_Column__c: location.column,
+            symbtablesnap__Number_of_Parameters__c: parameters.length || 0,
+            symbtablesnap__Signature__c: methodName + '(' + paramTypes.join(', ') + ')'
+        };
         if (!isConstructor) {
             method.Name += ': ' + method.symbtablesnap__Return_Type__c;
-        }
-        method.Name = method.Name!.substring(0, 80);
-        method.symbtablesnap__Signature__c = method.symbtablesnap__Method_Name__c + '(' + paramTypes.join(', ') + ')';
-        if (!isConstructor) {
             method.symbtablesnap__Signature__c += ': ' + method.symbtablesnap__Return_Type__c;
         }
         if (methodsByNames.hasOwnProperty(methodName)) {
@@ -101,12 +103,6 @@ export class MethodGenerator {
         } else {
             methodsByNames[methodName] = method;
         }
-        method.symbtablesnap__Snapshot_Key__c =
-            context.snapshot.Id +
-            ':' +
-            (isConstructor ? 'Constructor' : 'Method') +
-            ':' +
-            getHashCode(apexClass, method, location, paramTypes);
         context.registerRelationship(method, 'symbtablesnap__Snapshot__c', context.snapshot);
         context.registerRelationship(method, 'symbtablesnap__Class__c', apexClass);
         context.registerUpsert(method);
@@ -115,23 +111,4 @@ export class MethodGenerator {
             await context.methodLocalReferenceGenerator.generate(method, apexClass, reference);
         }
     }
-}
-
-function getHashCode(
-    apexClass: symbtablesnap__Apex_Class__c,
-    method: symbtablesnap__Method__c,
-    location: Position,
-    paramTypes: string[]
-): number {
-    let hash = 7;
-    hash = 31 * hash + hashCode(apexClass.symbtablesnap__Class_ID__c);
-    hash = 31 * hash + hashCode(apexClass.symbtablesnap__Class_Name__c);
-    hash = 31 * hash + hashCode(method.symbtablesnap__Method_Name__c);
-    hash = 31 * hash + hashCode(method.symbtablesnap__Return_Type__c);
-    for (let paramType of paramTypes) {
-        hash = 31 * hash + hashCode(paramType);
-    }
-    hash = 31 * hash + location.line;
-    hash = 31 * hash + location.column;
-    return hash;
 }

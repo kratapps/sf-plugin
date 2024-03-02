@@ -1,16 +1,17 @@
 import {
     SnapshotRecord,
-    SnapshotRecordFields,
-    SnapshotSObjectType,
-    SObjectSnapshotRecord,
+    SnapshotSObjectTypeName,
     symbtablesnap__Apex_Class__c,
+    symbtablesnap__Apex_Trigger__c,
+    symbtablesnap__Interface_Implementation__c,
     symbtablesnap__Method__c,
+    symbtablesnap__Method_Reference__c,
+    symbtablesnap__Property__c,
     symbtablesnap__Symbol_Table_Snapshot__c
 } from '../../types/symbtalesnap.js';
 import { Connection } from '@salesforce/core/lib/org/connection.js';
 import { ApexClassGenerator } from './apexClassGenerator.js';
 import { ApexTriggerGenerator } from './apexTriggerGenerator.js';
-import { newSnapshot } from '../factory/sObjectFactory.js';
 import { InnerClassGenerator } from './innerClassGenerator.js';
 import { InterfaceImplGenerator } from './interfaceImplGenerator.js';
 import { MethodGenerator } from './methodGenerator.js';
@@ -20,17 +21,17 @@ import { MethodLocalReferenceGenerator } from './methodLocalReferenceGenerator.j
 import { MethodDeclarationGenerator } from './methodDeclarationGenerator.js';
 import { hashCode } from '../../utils/hashUtils.js';
 import { Selector } from '../data/selector.js';
-import { ClassItem, classItemSorter, SnapshotData } from '../data/snapshotData.js';
+import { ClassItem, classItemSorter, getClassItemsByEntityIds } from '../data/snapshotData.js';
 import { buildGraph } from '../graph/buildGraph.js';
-import { Optional } from '@salesforce/ts-types';
+import { isString, Optional } from '@salesforce/ts-types';
 
 type Relationship = {
     record: SnapshotRecord;
     relatedToField: string;
-    relatedTo: SObjectSnapshotRecord;
+    relatedTo: SnapshotRecord;
 };
 
-const sObjectOrder: SnapshotSObjectType[] = [
+const sObjectOrder: SnapshotSObjectTypeName[] = [
     'symbtablesnap__Symbol_Table_Snapshot__c',
     'symbtablesnap__Apex_Class__c',
     'symbtablesnap__Apex_Trigger__c',
@@ -41,6 +42,21 @@ const sObjectOrder: SnapshotSObjectType[] = [
     'symbtablesnap__Declaration__c',
     'symbtablesnap__Method_Declaration__c'
 ];
+
+export async function newContext(metadataContainerId: string, targetConn: Connection, snapshotConn: Connection): Promise<Context> {
+    const org = await new Selector(targetConn).queryOrganization();
+    const snapshot: symbtablesnap__Symbol_Table_Snapshot__c = {
+        attributes: {
+            type: 'symbtablesnap__Symbol_Table_Snapshot__c',
+            url: ''
+        },
+        symbtablesnap__Snapshot_Key__c: `${hashCode(new Date().toISOString())}`,
+        symbtablesnap__Is_Latest__c: false,
+        symbtablesnap__Org_ID__c: org.Id,
+        symbtablesnap__Org_Namespace_Prefix__c: org.NamespacePrefix
+    };
+    return new Context(snapshot, metadataContainerId, targetConn, snapshotConn);
+}
 
 export class Context {
     verbose: boolean = false;
@@ -61,13 +77,19 @@ export class Context {
     methodReferenceGenerator = new MethodReferenceGenerator(this);
     propertyGenerator = new PropertyGenerator(this);
 
-    toUpsert: { [key: SnapshotSObjectType]: SnapshotRecord[] } = {};
+    toUpsert: { [key: SnapshotSObjectTypeName]: SnapshotRecord[] } = {};
     relationships: Relationship[] = [];
-    recordsByKey: { [key in SnapshotSObjectType]: SnapshotRecord } = {};
+    recordsByKey: { [key in SnapshotSObjectTypeName]: SnapshotRecord } = {};
+    recordsByType: { [key in SnapshotSObjectTypeName]: SnapshotRecord[] } = {};
 
-    constructor(metadataContainerId: string, targetConn: Connection, snapshotConn: Connection) {
+    constructor(
+        snapshot: symbtablesnap__Symbol_Table_Snapshot__c,
+        metadataContainerId: string,
+        targetConn: Connection,
+        snapshotConn: Connection
+    ) {
+        this.snapshot = snapshot;
         this.metadataContainerId = metadataContainerId;
-        this.snapshot = newSnapshot();
         this.targetConn = targetConn;
         this.conn = snapshotConn;
         this.targetSelector = new Selector(targetConn);
@@ -80,16 +102,40 @@ export class Context {
     clear() {
         for (let sObjectType of sObjectOrder) {
             this.toUpsert[sObjectType] = [];
+            this.recordsByType[sObjectType] = [];
         }
         this.relationships = [];
-        this.recordsByKey = {};
+    }
+
+    apexClasses(): symbtablesnap__Apex_Class__c[] {
+        return (this.recordsByType['symbtablesnap__Apex_Class__c'] || []) as symbtablesnap__Apex_Class__c[];
+    }
+
+    apexTriggers(): symbtablesnap__Apex_Trigger__c[] {
+        return (this.recordsByType['symbtablesnap__Apex_Trigger__c'] || []) as symbtablesnap__Apex_Trigger__c[];
+    }
+
+    methods(): symbtablesnap__Method__c[] {
+        return (this.recordsByType['symbtablesnap__Method__c'] || []) as symbtablesnap__Method__c[];
+    }
+
+    interfaceImplementations(): symbtablesnap__Interface_Implementation__c[] {
+        return (this.recordsByType['symbtablesnap__Interface_Implementation__c'] || []) as symbtablesnap__Interface_Implementation__c[];
+    }
+
+    methodReferences(): symbtablesnap__Method_Reference__c[] {
+        return (this.recordsByType['symbtablesnap__Method_Reference__c'] || []) as symbtablesnap__Method_Reference__c[];
+    }
+
+    properties(): symbtablesnap__Property__c[] {
+        return (this.recordsByType['symbtablesnap__Property__c'] || []) as symbtablesnap__Property__c[];
     }
 
     async markClassesAsEnqueued(): Promise<void> {
         this.enqueuedApexClassIds = await this.targetSelector.queryEnqueuedJobIds();
     }
 
-    registerRelationship(record: SnapshotRecord, relatedToField: SnapshotRecordFields, relatedTo: SnapshotRecord) {
+    registerRelationship(record: SnapshotRecord, relatedToField: string, relatedTo: SnapshotRecord) {
         if (!relatedTo) {
             throw Error('ups');
         }
@@ -105,17 +151,26 @@ export class Context {
         if (!key) {
             throw Error('Record without a key cannot be registered for upsert.');
         }
+        if (isString(record.Name)) {
+            record.Name = record.Name.substring(0, 80);
+        }
         if (this.recordsByKey.hasOwnProperty(key)) {
-            for (let key of Object.keys(record)) {
-                // @ts-ignore
-                const value = record[key];
+            for (let field of Object.keys(record)) {
+                const value = record[field];
                 if (value !== undefined) {
-                    this.recordsByKey[key] = value;
+                    this.recordsByKey[key][field] = value;
                 }
             }
         } else {
-            this.toUpsert[record.attributes.type].push(record);
+            const type = record?.attributes?.type;
+            if (!isString(type) || !sObjectOrder.includes(type)) {
+                console.error(record);
+                throw Error('Unsupported sobject.');
+            }
+
+            this.toUpsert[type].push(record);
             this.recordsByKey[key] = record;
+            this.recordsByType[type].push(record);
         }
         return this.recordsByKey[key] as T;
     }
@@ -163,15 +218,8 @@ export class Context {
 }
 
 export async function generateSnapshot(context: Context): Promise<void> {
-    const org = await context.targetSelector.queryOrganization();
-    context.snapshot = newSnapshot({
-        symbtablesnap__Snapshot_Key__c: `${hashCode(new Date().toISOString())}`,
-        symbtablesnap__Is_Latest__c: false,
-        symbtablesnap__Org_ID__c: org.Id,
-        symbtablesnap__Org_Namespace_Prefix__c: org.NamespacePrefix
-    });
     const saveResult = await context.conn.sobject('symbtablesnap__Symbol_Table_Snapshot__c').create(context.snapshot);
-    context.snapshot.Id = saveResult.id;
+    context.snapshot.Id = saveResult.id!;
     console.log(`Snapshot record created: ${context.snapshot.Id}`);
     console.log('Querying AsyncApexJob to search for scheduled apex classes...');
     await context.markClassesAsEnqueued();
@@ -189,22 +237,22 @@ export async function generateSnapshot(context: Context): Promise<void> {
 }
 
 async function updateLookups(context: Context) {
-    console.log('Updating lookups...');
-    context.recordsByKey = {};
+    console.log('Trying to match and update lookups...');
     context.clear();
-    const snapshot = await querySnapshotData(context);
+    await querySnapshotData(context);
+    // const snapshot = context.snapshotData;
     const declaredClasses: Record<string, symbtablesnap__Apex_Class__c> = {};
     const methodsByNames: Record<string, symbtablesnap__Method__c[]> = {};
-    for (let apexClass of snapshot.apexClasses) {
-        declaredClasses[apexClass.symbtablesnap__Full_Name__c!] = apexClass;
+    for (let apexClass of context.apexClasses()) {
+        declaredClasses[apexClass.symbtablesnap__Full_Name__c] = apexClass;
     }
-    for (let method of snapshot.methods) {
+    for (let method of context.methods()) {
         if (!methodsByNames.hasOwnProperty(method.symbtablesnap__Method_Name__c!)) {
-            methodsByNames[method.symbtablesnap__Method_Name__c!] = [];
+            methodsByNames[method.symbtablesnap__Method_Name__c] = [];
         }
-        methodsByNames[method.symbtablesnap__Method_Name__c!].push(method);
+        methodsByNames[method.symbtablesnap__Method_Name__c].push(method);
     }
-    for (let apexClass of snapshot.apexClasses) {
+    for (let apexClass of context.apexClasses()) {
         if (
             apexClass.symbtablesnap__Extends_Full_Name__c &&
             declaredClasses.hasOwnProperty(apexClass.symbtablesnap__Extends_Full_Name__c)
@@ -228,18 +276,18 @@ async function updateLookups(context: Context) {
             context.registerUpsert(apexClass);
         }
     }
-    for (let implementation of snapshot.interfaceImplementations) {
-        if (declaredClasses[implementation.symbtablesnap__Implements__c!]) {
+    for (let implementation of context.interfaceImplementations()) {
+        if (declaredClasses[implementation.symbtablesnap__Implements__c]) {
             context.registerRelationship(
                 implementation,
                 'symbtablesnap__Implements_Interface__c',
-                declaredClasses[implementation.symbtablesnap__Implements__c!]
+                declaredClasses[implementation.symbtablesnap__Implements__c]
             );
             context.registerUpsert(implementation);
         }
     }
-    for (let methodReference of snapshot.methodReferences) {
-        const potentialMethods: symbtablesnap__Method__c[] = methodsByNames[methodReference.symbtablesnap__Referenced_Method_Name__c!];
+    for (let methodReference of context.methodReferences()) {
+        const potentialMethods: symbtablesnap__Method__c[] = methodsByNames[methodReference.symbtablesnap__Referenced_Method_Name__c];
         if (potentialMethods == null) {
             continue;
         }
@@ -257,12 +305,12 @@ async function updateLookups(context: Context) {
         }
     }
     await context.commit();
-    await updateMethodToMethodReferences(context, snapshot);
+    await updateMethodToMethodReferences(context);
 }
 
-async function updateMethodToMethodReferences(context: Context, snapshot: SnapshotData) {
+async function updateMethodToMethodReferences(context: Context) {
     console.log('Updating method to method references...');
-    context.clear();
+    // context.clear();
     function findItem(items: ClassItem[], lineNumber: number, type: 'method' | 'property'): Optional<ClassItem> {
         let foundItem: Optional<ClassItem> = undefined;
         for (let i = 0; items && i < items.length; i++) {
@@ -276,7 +324,7 @@ async function updateMethodToMethodReferences(context: Context, snapshot: Snapsh
         return foundItem;
     }
 
-    const classItemsByEntityIds = snapshot.getClassItemsByEntityIds();
+    const classItemsByEntityIds = getClassItemsByEntityIds(context);
     for (let entityId of Object.keys(classItemsByEntityIds)) {
         const items = classItemsByEntityIds[entityId];
         items.sort(classItemSorter);
@@ -287,7 +335,7 @@ async function updateMethodToMethodReferences(context: Context, snapshot: Snapsh
 
     // TODO in GraphBuilder => addRelationship for Used_By_Method__c to Referenced_Method__c
 
-    for (let methodRef of snapshot.methodReferences) {
+    for (let methodRef of context.methodReferences()) {
         if (methodRef.symbtablesnap__Used_By_Class__c && methodRef.symbtablesnap__Reference_Line__c) {
             const line = methodRef.symbtablesnap__Reference_Line__c;
             const usedByItems = classItemsByEntityIds[methodRef.symbtablesnap__Used_By_Class__r?.symbtablesnap__Class_ID__c!];
@@ -305,20 +353,20 @@ async function updateMethodToMethodReferences(context: Context, snapshot: Snapsh
         }
     }
     await context.commit();
-    await updateReferencesScore(context, snapshot);
+    await updateReferencesScore(context);
 }
 
-async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
+async function updateReferencesScore(context: Context) {
     console.log('Calculating and updating reference scores...');
-    context.clear();
-    const graph = buildGraph(snapshot);
-    for (let apexTrigger of snapshot.apexTriggers) {
+    // context.clear();
+    const graph = buildGraph(context);
+    for (let apexTrigger of context.apexTriggers()) {
         if (apexTrigger.symbtablesnap__Is_Active__c) {
             graph.getNode(apexTrigger).addToScore(100, 100);
             context.registerUpsert(apexTrigger);
         }
     }
-    for (let apexClass of snapshot.apexClasses) {
+    for (let apexClass of context.apexClasses()) {
         if (apexClass.symbtablesnap__Is_Test__c) {
             graph.getNode(apexClass).addToScore(100, 0.01);
         }
@@ -327,7 +375,10 @@ async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
         }
         context.registerUpsert(apexClass);
     }
-    for (let method of snapshot.methods) {
+    for (let method of context.methods()) {
+        if (method.symbtablesnap__Signature__c === 'generate(Id): Id') {
+            graph.getNode(method).addToScore(100, 100);
+        }
         if (method.symbtablesnap__Is_Test__c) {
             graph.getNode(method).addToScore(100, 0.01);
         }
@@ -365,7 +416,7 @@ async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
     // interface method => method implementations
 
     // Apex Class score is max(class score, methods score)
-    for (let method of snapshot.methods) {
+    for (let method of context.methods()) {
         const apexClassNode = graph.getNodeByKey(method.symbtablesnap__Class__r!.symbtablesnap__Snapshot_Key__c!);
         const apexClass = apexClassNode.getRecord() as symbtablesnap__Apex_Class__c;
         apexClass.symbtablesnap__Is_Referenced_Score__c = Math.max(
@@ -380,15 +431,15 @@ async function updateReferencesScore(context: Context, snapshot: SnapshotData) {
     await context.commit();
 }
 
-async function querySnapshotData(context: Context): Promise<SnapshotData> {
+async function querySnapshotData(context: Context): Promise<void> {
+    context.recordsByKey = {};
     const selector = new Selector(context.conn);
-    const snapshot = new SnapshotData();
+    // const snapshot = new SnapshotData();
     const snapshotId = context.snapshot.Id!;
-    snapshot.apexClasses = await selector.queryApexClasses(snapshotId);
-    snapshot.apexTriggers = await selector.queryApexTriggers(snapshotId);
-    snapshot.interfaceImplementations = await selector.queryInterfaceImplementations(snapshotId);
-    snapshot.methods = await selector.queryMethods(snapshotId);
-    snapshot.properties = await selector.queryProperties(snapshotId);
-    snapshot.methodReferences = await selector.queryMethodReferences(snapshotId);
-    return snapshot;
+    context.recordsByType['symbtablesnap__Apex_Class__c'] = await selector.queryApexClasses(snapshotId);
+    context.recordsByType['symbtablesnap__Apex_Trigger__c'] = await selector.queryApexTriggers(snapshotId);
+    context.recordsByType['symbtablesnap__Interface_Implementation__c'] = await selector.queryInterfaceImplementations(snapshotId);
+    context.recordsByType['symbtablesnap__Method__c'] = await selector.queryMethods(snapshotId);
+    context.recordsByType['symbtablesnap__Property__c'] = await selector.queryProperties(snapshotId);
+    context.recordsByType['symbtablesnap__Method_Reference__c'] = await selector.queryMethodReferences(snapshotId);
 }

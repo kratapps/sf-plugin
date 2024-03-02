@@ -8,7 +8,6 @@ import {
 } from '../../types/symbtalesnap.js';
 import { SymbolTable } from '../../types/tooling.js';
 import { hashCode } from '../../utils/hashUtils.js';
-import { newMethodReference } from '../factory/sObjectFactory.js';
 
 export class MethodReferenceGenerator {
     context: Context;
@@ -30,8 +29,20 @@ export class MethodReferenceGenerator {
         for (let symbolRef of symbolTable.externalReferences) {
             for (let symbolMethod of symbolRef.methods) {
                 for (let location of symbolMethod.references) {
-                    const methodRef = newMethodReference({
-                        symbtablesnap__Snapshot__c: context.snapshot.Id,
+                    const hash = hashCode([
+                        entityId,
+                        entityName,
+                        symbolRef.name,
+                        symbolRef.namespace,
+                        symbolMethod.name,
+                        `${location.line}-${location.column}`
+                    ]);
+                    const methodRef: symbtablesnap__Method_Reference__c = {
+                        attributes: {
+                            type: 'symbtablesnap__Method_Reference__c',
+                            url: ''
+                        },
+                        symbtablesnap__Snapshot_Key__c: context.snapshot.Id + ':MethodRef:' + hash,
                         Name: entityName + ' => ' + symbolRef.name + '.' + symbolMethod.name,
                         symbtablesnap__Referenced_Class_Name__c: symbolRef.name,
                         symbtablesnap__Referenced_Namespace__c: symbolRef.namespace,
@@ -39,10 +50,8 @@ export class MethodReferenceGenerator {
                         symbtablesnap__Reference_Line__c: location.line,
                         symbtablesnap__Reference_Column__c: location.column,
                         symbtablesnap__Is_External__c: true
-                    });
-                    methodRef.Name = methodRef.Name!.substring(0, 80);
-                    methodRef.symbtablesnap__Snapshot_Key__c =
-                        context.snapshot.Id + ':MethodRef:' + getHashCode(entityId, entityName, methodRef);
+                    };
+                    context.registerRelationship(methodRef, 'symbtablesnap__Snapshot__c', context.snapshot);
                     if (isApexClass(item)) {
                         context.registerRelationship(methodRef, 'symbtablesnap__Used_By_Class__c', item);
                     } else if (isApexTrigger(item)) {
@@ -56,15 +65,4 @@ export class MethodReferenceGenerator {
             // }
         }
     }
-}
-
-function getHashCode(entityId: string, entityName: string, methodRef: symbtablesnap__Method_Reference__c): number {
-    let hash = 7;
-    hash = 31 * hash + hashCode(entityId);
-    hash = 31 * hash + hashCode(entityName);
-    hash = 31 * hash + hashCode(methodRef.symbtablesnap__Referenced_Class_Name__c);
-    hash = 31 * hash + hashCode(methodRef.symbtablesnap__Referenced_Namespace__c);
-    hash = 31 * hash + hashCode(methodRef.symbtablesnap__Referenced_Method_Name__c);
-    hash = 31 * hash + hashCode(methodRef.symbtablesnap__Reference_Line__c + '-' + methodRef.symbtablesnap__Reference_Column__c);
-    return hash;
 }

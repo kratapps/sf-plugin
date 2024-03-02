@@ -124,8 +124,8 @@ export class Selector {
         const query = await this.queryLoader.loadQuery('methodReferences.soql', {
             snapshotId
         });
-        const records: symbtablesnap__Property__c[] = [];
-        await queryAll<symbtablesnap__Property__c>(this.conn, query, async (result) => {
+        const records: symbtablesnap__Method_Reference__c[] = [];
+        await queryAll<symbtablesnap__Method_Reference__c>(this.conn, query, async (result) => {
             records.push(...result.records);
         });
         return records;

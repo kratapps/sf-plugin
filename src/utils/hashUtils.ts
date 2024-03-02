@@ -1,17 +1,26 @@
-import { isNumber } from '@salesforce/ts-types';
+import { isArray, isNumber, isString } from '@salesforce/ts-types';
 
-export function hashCode(value: string | number | undefined | null): number {
-    let hash = 0;
+type Hashable = string | number | undefined | null;
+
+export function hashCode(value: Hashable | Hashable[]): number {
+    let hash = 7;
     if (value === undefined || value === null) {
         return hash;
     }
     if (isNumber(value)) {
         return value;
     }
-    for (let i = 0; i < value.length; i++) {
-        let code = value.charCodeAt(i);
-        hash = (hash << 5) - hash + code;
-        hash = hash & hash;
+    if (isString(value)) {
+        for (let i = 0; i < value.length; i++) {
+            let code = value.charCodeAt(i);
+            hash = (hash << 5) - hash + code;
+            hash = hash & hash;
+        }
+    }
+    if (isArray(value)) {
+        for (let nestedValue of value) {
+            hash = 31 * hash + hashCode(nestedValue);
+        }
     }
     return hash;
 }
