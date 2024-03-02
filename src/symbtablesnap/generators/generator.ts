@@ -1,4 +1,6 @@
 import {
+    AllSObjectTypes,
+    RecordsByType,
     SnapshotRecord,
     SnapshotSObjectTypeName,
     symbtablesnap__Apex_Class__c,
@@ -77,10 +79,10 @@ export class Context {
     methodReferenceGenerator = new MethodReferenceGenerator(this);
     propertyGenerator = new PropertyGenerator(this);
 
-    toUpsert: { [key: SnapshotSObjectTypeName]: SnapshotRecord[] } = {};
+    toUpsert: { [key: string]: SnapshotRecord[] } = {};
     relationships: Relationship[] = [];
-    recordsByKey: { [key in SnapshotSObjectTypeName]: SnapshotRecord } = {};
-    recordsByType: { [key in SnapshotSObjectTypeName]: SnapshotRecord[] } = {};
+    recordsByKey: { [key in string]: SnapshotRecord } = {};
+    recordsByType: RecordsByType = {};
 
     constructor(
         snapshot: symbtablesnap__Symbol_Table_Snapshot__c,
@@ -97,6 +99,33 @@ export class Context {
         this.conn.bulk.pollInterval = 5000;
         this.conn.bulk.pollTimeout = 120000;
         this.clear();
+        for (let type of sObjectOrder) {
+            this.recordsByType[type] = [];
+        }
+    }
+
+    apexClasses(): symbtablesnap__Apex_Class__c[] {
+        return this.recordsByType['symbtablesnap__Apex_Class__c'] ?? [];
+    }
+
+    apexTriggers(): symbtablesnap__Apex_Trigger__c[] {
+        return this.recordsByType['symbtablesnap__Apex_Trigger__c'] ?? [];
+    }
+
+    methods(): symbtablesnap__Method__c[] {
+        return this.recordsByType['symbtablesnap__Method__c'] ?? [];
+    }
+
+    interfaceImplementations(): symbtablesnap__Interface_Implementation__c[] {
+        return this.recordsByType['symbtablesnap__Interface_Implementation__c'] ?? [];
+    }
+
+    methodReferences(): symbtablesnap__Method_Reference__c[] {
+        return this.recordsByType['symbtablesnap__Method_Reference__c'] ?? [];
+    }
+
+    properties(): symbtablesnap__Property__c[] {
+        return this.recordsByType['symbtablesnap__Property__c'] ?? [];
     }
 
     clear() {
@@ -105,30 +134,6 @@ export class Context {
             this.recordsByType[sObjectType] = [];
         }
         this.relationships = [];
-    }
-
-    apexClasses(): symbtablesnap__Apex_Class__c[] {
-        return (this.recordsByType['symbtablesnap__Apex_Class__c'] || []) as symbtablesnap__Apex_Class__c[];
-    }
-
-    apexTriggers(): symbtablesnap__Apex_Trigger__c[] {
-        return (this.recordsByType['symbtablesnap__Apex_Trigger__c'] || []) as symbtablesnap__Apex_Trigger__c[];
-    }
-
-    methods(): symbtablesnap__Method__c[] {
-        return (this.recordsByType['symbtablesnap__Method__c'] || []) as symbtablesnap__Method__c[];
-    }
-
-    interfaceImplementations(): symbtablesnap__Interface_Implementation__c[] {
-        return (this.recordsByType['symbtablesnap__Interface_Implementation__c'] || []) as symbtablesnap__Interface_Implementation__c[];
-    }
-
-    methodReferences(): symbtablesnap__Method_Reference__c[] {
-        return (this.recordsByType['symbtablesnap__Method_Reference__c'] || []) as symbtablesnap__Method_Reference__c[];
-    }
-
-    properties(): symbtablesnap__Property__c[] {
-        return (this.recordsByType['symbtablesnap__Property__c'] || []) as symbtablesnap__Property__c[];
     }
 
     async markClassesAsEnqueued(): Promise<void> {
@@ -146,7 +151,7 @@ export class Context {
         });
     }
 
-    registerUpsert<T extends SnapshotRecord>(record: T): T {
+    registerUpsert<T extends AllSObjectTypes>(record: T): T {
         const key = record.symbtablesnap__Snapshot_Key__c;
         if (!key) {
             throw Error('Record without a key cannot be registered for upsert.');
@@ -158,19 +163,22 @@ export class Context {
             for (let field of Object.keys(record)) {
                 const value = record[field];
                 if (value !== undefined) {
-                    this.recordsByKey[key][field] = value;
+                    const existingRecord = this.recordsByKey[key];
+                    if (existingRecord) {
+                        existingRecord[field] = value;
+                    }
                 }
             }
         } else {
-            const type = record?.attributes?.type;
+            const type: SnapshotSObjectTypeName = record.attributes.type;
             if (!isString(type) || !sObjectOrder.includes(type)) {
                 console.error(record);
                 throw Error('Unsupported sobject.');
             }
-
             this.toUpsert[type].push(record);
             this.recordsByKey[key] = record;
-            this.recordsByType[type].push(record);
+            const records: AllSObjectTypes[] = this.recordsByType[record.attributes.type]!;
+            records.push(record);
         }
         return this.recordsByKey[key] as T;
     }
@@ -439,4 +447,9 @@ async function querySnapshotData(context: Context): Promise<void> {
     context.recordsByType['symbtablesnap__Method__c'] = await selector.queryMethods(snapshotId);
     context.recordsByType['symbtablesnap__Property__c'] = await selector.queryProperties(snapshotId);
     context.recordsByType['symbtablesnap__Method_Reference__c'] = await selector.queryMethodReferences(snapshotId);
+    for (let type of sObjectOrder) {
+        for (let record of context.recordsByType[type] ?? []) {
+            context.recordsByKey[record.symbtablesnap__Snapshot_Key__c] = record;
+        }
+    }
 }
