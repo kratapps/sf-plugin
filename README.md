@@ -7,9 +7,9 @@
 <!-- toc -->
 
 - [kratapps sf plugin](#kratapps-sf-plugin)
-  <!-- tocstop -->
-  U
-  <!-- install -->
+<!-- tocstop -->
+
+<!-- install -->
 
 <!-- commands -->
 
