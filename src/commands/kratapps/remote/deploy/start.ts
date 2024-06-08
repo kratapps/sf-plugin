@@ -12,9 +12,9 @@ import {
     isRepositoryContent,
     RepositoryContent,
     StructuredFileLocation
-} from '../../../../utils/github.js';
+} from '../../../../core/github.js';
 import { ProjectJson } from '@salesforce/core/lib/sfProject.js';
-import { getTypeInfo, MetadataTypeInfo } from '../../../../utils/metadataTypeInfos.js';
+import { getTypeInfo, MetadataTypeInfo } from '../../../../core/metadataTypeInfos.js';
 import { executeDeploy, resolveApi } from '../../../../plugin-deploy-retrieve/deploy.js';
 import { DeployProgress } from '../../../../plugin-deploy-retrieve/progressBar.js';
 import { DeployVersionData } from '@salesforce/source-deploy-retrieve';

@@ -1,7 +1,7 @@
 {
   "name": "@kratapps/sf-plugin",
   "description": "kratapps.com",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "dependencies": {
     "@oclif/core": "^3.18.1",
     "@salesforce/apex-node": "^3.0.2",
@@ -9,10 +9,13 @@
     "@salesforce/sf-plugins-core": "^7.1.4",
     "@salesforce/source-deploy-retrieve": "^10.3.0",
     "@salesforce/source-tracking": "^5.1.9",
+    "csv-parse": "^5.5.6",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
     "rimraf": "^5.0.5",
-    "tmp": "^0.2.1"
+    "sanitize-filename": "^1.6.3",
+    "tmp": "^0.2.1",
+    "yaml": "^2.4.3"
   },
   "devDependencies": {
     "@kratapps/prettier-config": "^0.1.5",
@@ -59,6 +62,9 @@
       "kratapps": {
         "description": "Plugin by kratapps.com",
         "subtopics": {
+          "data": {
+            "description": "Manage records."
+          },
           "remote": {
             "description": "Connected to remote services, like GitHub."
           }
