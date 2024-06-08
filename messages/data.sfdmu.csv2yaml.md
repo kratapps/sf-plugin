@@ -36,6 +36,10 @@ When objects are described, fields such as numbers or booleans are parsed correc
 
 Retrieve objects describe even when cached.
 
+# flags.operations.summary
+
+Filter object configuration based on SFDMU operation.
+
 # apiVersionMsgDetailed
 
 %s %s metadata to %s using the v%s %s API.

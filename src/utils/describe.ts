@@ -1,6 +1,6 @@
 import { Connection } from '@salesforce/core/lib/org/connection.js';
 import { DescribeSObjectResult } from 'jsforce/src/types/index.js';
-import { readJson, writeJson } from './file.js';
+import { readJson, writeJson } from './fs.js';
 import { Optional } from '@salesforce/ts-types';
 import { Field } from 'jsforce';
 import path from 'path';

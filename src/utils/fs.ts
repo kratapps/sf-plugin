@@ -6,6 +6,22 @@ import { parse as parseCsv } from 'csv-parse';
 import { stringify as stringifyCsv } from 'csv-stringify/sync';
 import path from 'path';
 
+export async function fileExists(file: string): Promise<boolean> {
+    try {
+        return (await fs.stat(file)).isFile();
+    } catch {
+        return false;
+    }
+}
+
+export async function dirExists(file: string): Promise<boolean> {
+    try {
+        return (await fs.stat(file)).isDirectory();
+    } catch {
+        return false;
+    }
+}
+
 export async function readYaml(file: string): Promise<any> {
     return yaml.parse(await readFile(file));
 }

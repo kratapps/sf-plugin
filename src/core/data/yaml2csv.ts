@@ -1,4 +1,4 @@
-import { readYaml, walkFiles, writeCsv } from '../../utils/file.js';
+import { readYaml, walkFiles, writeCsv } from '../../utils/fs.js';
 
 interface Options {
     csvFile: string;

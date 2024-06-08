@@ -1,4 +1,4 @@
-import { readJson } from '../utils/file.js';
+import { readJson } from '../utils/fs.js';
 
 export interface SfdmuConfig {
     excludeIdsFromCSVFiles?: boolean;
@@ -7,10 +7,12 @@ export interface SfdmuConfig {
 
 export interface SfdmuObjectConfig {
     query: string;
-    operation: string;
+    operation: Operation;
     externalId: string;
     objectName: string;
 }
+
+export type Operation = 'Insert' | 'Update' | 'Upsert' | 'Readonly' | 'Delete' | 'HardDelete' | 'DeleteSource' | 'DeleteHierarchy';
 
 export async function loadConfig(exportFile: string): Promise<SfdmuConfig> {
     const config = await readJson<SfdmuConfig>(exportFile);

@@ -3,7 +3,7 @@ import { Optional } from '@salesforce/ts-types';
 import { emptyDir } from 'fs-extra';
 import { Field } from 'jsforce';
 import path from 'path';
-import { readCsvStream, sanitizeFile, writeYaml } from '../../utils/file.js';
+import { readCsvStream, sanitizeFile, writeYaml } from '../../utils/fs.js';
 import { deepFieldDescribe, describeObject, FieldDeepDescribe } from '../../utils/describe.js';
 import { describeFieldsMeta, FieldsMeta } from './meta/describeFieldsMeta.js';
 
@@ -38,8 +38,7 @@ export async function csv2yaml({
         await emptyDir(recordsDir);
     }
     const describe = schemaOrg ? await describeObject(schemaOrg?.getConnection(), sObjectName, { outputDir: dir, refreshSchema }) : null;
-    const allExternalValues = new Set<string>();
-    const allFileNames = new Set<string>();
+    const fileNamesCounter = new Map<string, number>();
     let headers: string[] | undefined;
     let externalIndexes: number[] = [];
     let size = 0;
@@ -71,21 +70,14 @@ export async function csv2yaml({
                 console.error(`External value not found on row ${size}. Record ignored.`);
                 return;
             }
-            if (allExternalValues.has(externalValue)) {
-                console.error(
-                    `Duplicate external value "${externalValue}" on "${sObjectName}.${externalId}" on row ${size}. Record ignored.`
-                );
-                return;
+            let fileName = sanitizeFile(externalValue.replace(/\s+/g, '_'));
+            const count = fileNamesCounter.get(fileName) ?? 0;
+            fileNamesCounter.set(fileName, count + 1);
+            if (count > 0) {
+                // Duplicate file name.
+                console.warn(`File name conflict: ${externalValue}`);
+                fileName += `_(${count})`;
             }
-            allExternalValues.add(externalValue);
-            const fileName = `${sanitizeFile(externalValue.replace(/\s+/g, '_'))}.yaml`;
-            if (allFileNames.has(fileName)) {
-                console.error(
-                    `Duplicate file name for record where ${sObjectName}.${externalId} is "${externalValue}" on row ${size}. Record ignored.`
-                );
-                return;
-            }
-            allFileNames.add(fileName);
             const record: Record<string, any> = Object.fromEntries(
                 headers.map((field, headerIdx) => {
                     let fieldDescribe: Optional<Field>;
@@ -106,7 +98,7 @@ export async function csv2yaml({
                     return [field, value];
                 })
             );
-            await writeYaml(path.join(recordsDir, fileName), record);
+            await writeYaml(path.join(recordsDir, `${fileName}.yaml`), record);
         }
     });
 }

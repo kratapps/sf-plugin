@@ -20,6 +20,10 @@ SFDMU root directory containing the generated CSV files.
 
 Full file path for SFDMU config (export.json).
 
+# flags.operations.summary
+
+Filter object configuration based on SFDMU operation.
+
 # apiVersionMsgDetailed
 
 %s %s metadata to %s using the v%s %s API.

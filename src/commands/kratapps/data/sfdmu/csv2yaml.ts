@@ -1,11 +1,14 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { csv2yaml } from '../../../../core/data/sfdmu/csv2yaml.js';
+import { Operation } from '../../../../sfdmu/config.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@kratapps/sf-plugin', 'data.sfdmu.csv2yaml');
 
 export type KratappsDataSfdmuCsv2yamlResult = {};
+
+const defaultOperations: Operation[] = ['Insert', 'Update', 'Upsert'];
 
 export default class KratappsDataSfdmuCsv2yaml extends SfCommand<KratappsDataSfdmuCsv2yamlResult> {
     public static readonly summary = messages.getMessage('summary');
@@ -34,6 +37,10 @@ export default class KratappsDataSfdmuCsv2yaml extends SfCommand<KratappsDataSfd
         'refresh-schema': Flags.boolean({
             summary: messages.getMessage('flags.refresh-schema.summary'),
             default: false
+        }),
+        operations: Flags.string({
+            summary: messages.getMessage('flags.operations.summary'),
+            default: defaultOperations.join(';')
         })
     };
 
@@ -45,13 +52,15 @@ export default class KratappsDataSfdmuCsv2yaml extends SfCommand<KratappsDataSfd
         const outputDir = flags['output-dir'];
         const schemaOrg = flags['schema-org'];
         const refreshSchema = flags['refresh-schema'];
+        const operations = flags['operations'].split(';') as Operation[];
         await csv2yaml({
             preserveExisting,
             sfdmuDir: csvDir,
             configFile,
             outputDir,
             schemaOrg,
-            refreshSchema
+            refreshSchema,
+            operations
         });
         return {};
     }
