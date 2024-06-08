@@ -51,3 +51,4 @@ test/
 .vscode/
 yarn.lock
 Makefile
+npm-shrinkwrap.json

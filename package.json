@@ -1,7 +1,7 @@
 {
   "name": "@kratapps/sf-plugin",
   "description": "kratapps.com",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "dependencies": {
     "@oclif/core": "^3.18.1",
     "@salesforce/apex-node": "^3.0.2",
@@ -10,6 +10,7 @@
     "@salesforce/source-deploy-retrieve": "^10.3.0",
     "@salesforce/source-tracking": "^5.1.9",
     "csv-parse": "^5.5.6",
+    "csv-stringify": "^6.4.6",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
     "rimraf": "^5.0.5",
@@ -22,6 +23,7 @@
     "@oclif/plugin-command-snapshot": "^5.0.6",
     "@salesforce/cli-plugins-testkit": "^5.1.8",
     "@salesforce/dev-scripts": "^8.3.0",
+    "@types/csv-stringify": "^3.1.0",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.1.0",
     "@types/shelljs": "^0.8.15",

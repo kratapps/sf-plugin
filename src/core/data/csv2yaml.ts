@@ -47,35 +47,6 @@ export async function csv2yaml({
     let fieldRecursive: { [key: string]: FieldDeepDescribe | null } = {};
     let headersMeta: FieldsMeta = {};
 
-    if (schemaOrg) {
-        await writeYaml(
-            path.join(metaDir, 'tmp.yaml'),
-            await describeFieldsMeta({
-                Description: await deepFieldDescribe(schemaOrg.getConnection(), 'Contact', 'Description', { outputDir: dir }),
-                'Account.Owner.CreatedBy.Name': await deepFieldDescribe(
-                    schemaOrg.getConnection(),
-                    'Contact',
-                    'Account.Owner.CreatedBy.Name',
-                    { outputDir: dir }
-                ),
-                'Account.Owner.Alias': await deepFieldDescribe(schemaOrg.getConnection(), 'Contact', 'Account.Owner.Alias', {
-                    outputDir: dir
-                }),
-                'Account.OwnerId': await deepFieldDescribe(schemaOrg.getConnection(), 'Contact', 'Account.OwnerId', { outputDir: dir }),
-                'Account.Owner.CreatedBy.Email': await deepFieldDescribe(
-                    schemaOrg.getConnection(),
-                    'Contact',
-                    'Account.Owner.CreatedBy.Email',
-                    { outputDir: dir }
-                ),
-                'Account.Owner.FirstName': await deepFieldDescribe(schemaOrg.getConnection(), 'Contact', 'Account.Owner.FirstName', {
-                    outputDir: dir
-                }),
-                AccountId: await deepFieldDescribe(schemaOrg.getConnection(), 'Contact', 'AccountId', { outputDir: dir })
-            })
-        );
-    }
-
     await readCsvStream(csvFile, async (row: string[]) => {
         if (!headers) {
             headers = row;

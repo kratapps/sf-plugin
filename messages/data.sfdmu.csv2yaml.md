@@ -12,7 +12,7 @@ We prefer using YAML files, which are smaller, easier to find and read, and opti
 
 Retain existing records in the output directory.
 
-# flags.csv-dir.summary
+# flags.sfdmu-dir.summary
 
 SFDMU root directory containing the retrieved CSV files.
 

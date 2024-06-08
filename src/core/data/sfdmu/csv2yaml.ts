@@ -6,21 +6,21 @@ import path from 'path';
 
 interface Options {
     preserveExisting: boolean;
-    csvDir: string;
+    sfdmuDir: string;
     configFile?: string;
     outputDir?: string;
     schemaOrg?: Optional<Org>;
     refreshSchema: boolean;
 }
 
-export async function csv2yaml({ preserveExisting, csvDir, configFile, outputDir, schemaOrg, refreshSchema }: Options) {
-    const config = await loadConfig(configFile ?? path.join(csvDir, 'export.json'));
+export async function csv2yaml({ preserveExisting, sfdmuDir, configFile, outputDir, schemaOrg, refreshSchema }: Options) {
+    const config = await loadConfig(configFile ?? path.join(sfdmuDir, 'export.json'));
     for (let objectConfig of config.objects) {
-        const objectName = objectConfig.query.split(' FROM ')[1].trim().split(' ')[0].trim();
+        const objectName = objectConfig.objectName;
         await coreCsv2yaml({
             preserveExisting,
             externalId: objectConfig.externalId.split(';'),
-            csvFile: path.join(csvDir, `${objectName}.csv`),
+            csvFile: path.join(sfdmuDir, `${objectName}.csv`),
             objectName,
             outputDir,
             schemaOrg,

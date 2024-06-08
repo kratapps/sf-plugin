@@ -3,6 +3,12 @@ import type { CreateNodeOptions, DocumentOptions, ParseOptions, SchemaOptions, T
 import fs from 'fs-extra';
 import sanitize = require('sanitize-filename');
 import { parse as parseCsv } from 'csv-parse';
+import { stringify as stringifyCsv } from 'csv-stringify/sync';
+import path from 'path';
+
+export async function readYaml(file: string): Promise<any> {
+    return yaml.parse(await readFile(file));
+}
 
 export async function writeYaml(
     file: string,
@@ -59,4 +65,24 @@ export async function readCsvStream(file: string, on: (row: string[]) => void): 
                 console.error(error);
             });
     });
+}
+
+export async function writeCsv(file: string, obj: any): Promise<void> {
+    return writeFile(file, stringifyCsv(obj));
+}
+
+export async function walkFiles(dir: string): Promise<{ path: string; name: string }[]> {
+    const files = await fs.readdir(dir);
+    const onlyFilePaths: { path: string; name: string }[] = [];
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        const fileStat = await fs.stat(filePath);
+        if (fileStat.isFile()) {
+            onlyFilePaths.push({
+                path: filePath,
+                name: file
+            });
+        }
+    }
+    return onlyFilePaths;
 }

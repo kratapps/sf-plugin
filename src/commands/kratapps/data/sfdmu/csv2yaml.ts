@@ -17,8 +17,8 @@ export default class KratappsDataSfdmuCsv2yaml extends SfCommand<KratappsDataSfd
             summary: messages.getMessage('flags.preserve-existing.summary'),
             default: false
         }),
-        'csv-dir': Flags.string({
-            summary: messages.getMessage('flags.csv-dir.summary'),
+        'sfdmu-dir': Flags.string({
+            summary: messages.getMessage('flags.sfdmu-dir.summary'),
             required: true
         }),
         'config-file': Flags.string({
@@ -40,14 +40,14 @@ export default class KratappsDataSfdmuCsv2yaml extends SfCommand<KratappsDataSfd
     public async run(): Promise<KratappsDataSfdmuCsv2yamlResult> {
         const { flags } = await this.parse(KratappsDataSfdmuCsv2yaml);
         const preserveExisting = flags['preserve-existing'];
-        const csvDir = flags['csv-dir'];
+        const csvDir = flags['sfdmu-dir'];
         const configFile = flags['config-file'];
         const outputDir = flags['output-dir'];
         const schemaOrg = flags['schema-org'];
         const refreshSchema = flags['refresh-schema'];
         await csv2yaml({
             preserveExisting,
-            csvDir,
+            sfdmuDir: csvDir,
             configFile,
             outputDir,
             schemaOrg,
