@@ -20,7 +20,7 @@ SFDMU root directory containing the retrieved CSV files.
 
 Full file path for SFDMU config (export.json).
 
-# flags.output-dir.summary
+# flags.source-dir.summary
 
 Directory root for the generated record files.
 

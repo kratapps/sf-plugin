@@ -34,7 +34,7 @@ Name of the object being converted.
 
 Parsed from the CSV file name if not specified.
 
-# flags.output-dir.summary
+# flags.source-dir.summary
 
 Directory root for the generated record files.
 

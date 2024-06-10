@@ -13,7 +13,7 @@ interface Options {
     externalId: string[];
     csvFile: string;
     objectName?: string;
-    outputDir?: string;
+    sourceDir?: string;
     schemaOrg?: Optional<Org>;
     refreshSchema: boolean;
     externalValueSeparator: string;
@@ -24,16 +24,16 @@ export async function csv2yaml({
     externalId,
     csvFile,
     objectName,
-    outputDir,
+    sourceDir,
     schemaOrg,
     refreshSchema,
     externalValueSeparator
 }: Options) {
     const csvFileBaseName = path.basename(csvFile, path.extname(csvFile));
     let sObjectName = objectName ?? csvFileBaseName;
-    const dir = outputDir ?? 'src';
-    const recordsDir = path.join(dir, sObjectName, 'records');
-    const metaDir = path.join(dir, sObjectName, 'meta');
+    const dir = sourceDir ?? 'src';
+    const objectDir = path.join(dir, sObjectName);
+    const recordsDir = path.join(objectDir, 'records');
     if (!preserveExisting) {
         await emptyDir(recordsDir);
     }
@@ -61,8 +61,8 @@ export async function csv2yaml({
                     });
                 }
                 headersMeta = await describeFieldsMeta(fieldRecursive);
+                await writeYaml(path.join(objectDir, 'fields.yaml'), headersMeta);
             }
-            await writeYaml(path.join(metaDir, 'fields.yaml'), headersMeta);
         } else if (externalIndexes && externalId && sObjectName) {
             size += 1;
             const externalValue = externalIndexes.map((it) => row[it]).join(externalValueSeparator);

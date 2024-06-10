@@ -57,7 +57,7 @@ export default class KratappsDataCsv2yaml extends SfCommand<KratappsDataCsv2yaml
         const externalId = flags['external-id'];
         const csvFile = flags['csv-file'];
         const objectName = flags['object-name'];
-        const outputDir = flags['output-dir'];
+        const sourceDir = flags['source-dir'];
         const schemaOrg = flags['schema-org'];
         const refreshSchema = flags['refresh-schema'];
         const externalIdSeparator = flags['external-id-separator'];
@@ -68,7 +68,7 @@ export default class KratappsDataCsv2yaml extends SfCommand<KratappsDataCsv2yaml
             externalId: externalId.split(externalIdSeparator),
             csvFile,
             objectName,
-            outputDir,
+            sourceDir,
             schemaOrg,
             refreshSchema
         });
