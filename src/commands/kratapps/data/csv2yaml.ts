@@ -30,8 +30,8 @@ export default class KratappsDataCsv2yaml extends SfCommand<KratappsDataCsv2yaml
             summary: messages.getMessage('flags.object-name.summary'),
             description: messages.getMessage('flags.object-name.description')
         }),
-        'output-dir': Flags.string({
-            summary: messages.getMessage('flags.output-dir.summary')
+        'source-dir': Flags.string({
+            summary: messages.getMessage('flags.source-dir.summary')
         }),
         'schema-org': Flags.optionalOrg({
             summary: messages.getMessage('flags.schema-org.summary'),
