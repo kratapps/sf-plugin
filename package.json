@@ -4,7 +4,6 @@
   "version": "1.0.8",
   "dependencies": {
     "@oclif/core": "^3.18.1",
-    "@salesforce/apex-node": "^3.0.2",
     "@salesforce/core": "^6.5.1",
     "@salesforce/sf-plugins-core": "^7.1.4",
     "@salesforce/source-deploy-retrieve": "^10.3.0",

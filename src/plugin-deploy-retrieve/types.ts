@@ -16,9 +16,9 @@ import {
     FileResponseSuccess
 } from '@salesforce/source-deploy-retrieve';
 import { isObject } from '@salesforce/ts-types';
-import { DefaultReportOptions } from '@salesforce/apex-node';
+// import { DefaultReportOptions } from '@salesforce/apex-node';
 
-export const reportsFormatters = Object.keys(DefaultReportOptions);
+// export const reportsFormatters = Object.keys(DefaultReportOptions);
 
 export enum TestLevel {
     NoTestRun = 'NoTestRun',
@@ -68,7 +68,7 @@ export type DeleteSourceJson = {
     junit?: string;
 } & MetadataApiDeployStatus;
 
-export type CoverageResultsFileInfo = Record<keyof Partial<typeof DefaultReportOptions>, string>;
+export type CoverageResultsFileInfo = Record<keyof Partial<any>, string>;
 
 export type DeployResultJson =
     | (MetadataApiDeployStatus & { files: FileResponse[] } & { replacements?: Record<string, string[]> })

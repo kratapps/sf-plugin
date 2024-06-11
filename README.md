@@ -13,9 +13,60 @@
 
 <!-- commands -->
 
+- [`sf kratapps data csv2yaml`](#sf-kratapps-data-csv2yaml)
 - [`sf kratapps data sfdmu csv2yaml`](#sf-kratapps-data-sfdmu-csv2yaml)
 - [`sf kratapps data sfdmu yaml2csv`](#sf-kratapps-data-sfdmu-yaml2csv)
 - [`sf kratapps remote deploy start`](#sf-kratapps-remote-deploy-start)
+
+## `sf kratapps data csv2yaml`
+
+BETA command. Convert CSV file into multiple YAML files, with each record in the CSV saved as a separate YAML file.
+
+```
+USAGE
+  $ sf kratapps data csv2yaml --external-id <value> --csv-file <value> [--json] [--preserve-existing] [--object-name
+    <value>] [--source-dir <value>] [-o <value>] [--refresh-schema] [--external-id-separator <value>]
+    [--external-value-separator <value>]
+
+FLAGS
+  -o, --schema-org=<value>                Org to describe the objects.
+      --csv-file=<value>                  (required) Full file path for CSV file to convert.
+      --external-id=<value>               (required) External ID used to name the generated file.
+      --external-id-separator=<value>     [default: ;] Separator for composite external ID flag.
+      --external-value-separator=<value>  [default: ;] Separator for composite external ID file names.
+      --object-name=<value>               Name of the object being converted.
+      --preserve-existing                 Retain existing records in the output directory.
+      --refresh-schema                    Retrieve objects describe even when cached.
+      --source-dir=<value>                Directory root for the generated record files.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  BETA command. Convert CSV file into multiple YAML files, with each record in the CSV saved as a separate YAML file.
+
+  Many Salesforce data migration utilities work only with CSV files.
+
+  We prefer using YAML files, which are smaller, easier to find and read, and optimized for Git.
+
+  Refer to the `sf kratapps data sfdmu csv2yaml` command if you are using the SFDMU plugin.
+
+EXAMPLES
+  $ sf kratapps data csv2yaml
+
+FLAG DESCRIPTIONS
+  -o, --schema-org=<value>  Org to describe the objects.
+
+    When objects are described, fields such as numbers or booleans are parsed correctly and not retained as strings.
+
+  --external-id=<value>  External ID used to name the generated file.
+
+    Can be composite and does not need to be marked as external in Salesforce.
+
+  --object-name=<value>  Name of the object being converted.
+
+    Parsed from the CSV file name if not specified.
+```
 
 ## `sf kratapps data sfdmu csv2yaml`
 
