@@ -1,16 +1,16 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { yaml2csv } from '../../../../core/data/sfdmu/yaml2csv.js';
-import { Operation } from '../../../../sfdmu/config.js';
+import { yaml2csv } from '../../../core/data/sfdmu/yaml2csv.js';
+import { Operation } from '../../../sfdmu/config.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const messages = Messages.loadMessages('@kratapps/sf-plugin', 'data.sfdmu.yaml2csv');
+const messages = Messages.loadMessages('@kratapps/sf-plugin', 'sfdmu.yaml2csv');
 
-export type KratappsDataSfdmuYaml2csvResult = {};
+export type KratappsSfdmuYaml2csvResult = {};
 
 const defaultOperations: Operation[] = ['Insert', 'Update', 'Upsert'];
 
-export default class KratappsDataSfdmuYaml2csv extends SfCommand<KratappsDataSfdmuYaml2csvResult> {
+export default class KratappsSfdmuYaml2csv extends SfCommand<KratappsSfdmuYaml2csvResult> {
     public static readonly summary = messages.getMessage('summary');
     public static readonly description = messages.getMessage('description');
     public static readonly examples = messages.getMessages('examples');
@@ -34,8 +34,8 @@ export default class KratappsDataSfdmuYaml2csv extends SfCommand<KratappsDataSfd
         })
     };
 
-    public async run(): Promise<KratappsDataSfdmuYaml2csvResult> {
-        const { flags } = await this.parse(KratappsDataSfdmuYaml2csv);
+    public async run(): Promise<KratappsSfdmuYaml2csvResult> {
+        const { flags } = await this.parse(KratappsSfdmuYaml2csv);
         const sourceDir = flags['source-dir'];
         const sfdmuDir = flags['sfdmu-dir'];
         const configFile = flags['config-file'];
