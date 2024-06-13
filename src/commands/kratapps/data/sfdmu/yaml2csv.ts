@@ -18,13 +18,15 @@ export default class KratappsDataSfdmuYaml2csv extends SfCommand<KratappsDataSfd
     public static readonly flags = {
         'source-dir': Flags.string({
             summary: messages.getMessage('flags.source-dir.summary'),
+            default: 'data',
             required: true
         }),
         'config-file': Flags.string({
             summary: messages.getMessage('flags.config-file.summary')
         }),
         'sfdmu-dir': Flags.string({
-            summary: messages.getMessage('flags.sfdmu-dir.summary')
+            summary: messages.getMessage('flags.sfdmu-dir.summary'),
+            default: 'out'
         }),
         operations: Flags.string({
             summary: messages.getMessage('flags.operations.summary'),
@@ -35,7 +37,7 @@ export default class KratappsDataSfdmuYaml2csv extends SfCommand<KratappsDataSfd
     public async run(): Promise<KratappsDataSfdmuYaml2csvResult> {
         const { flags } = await this.parse(KratappsDataSfdmuYaml2csv);
         const sourceDir = flags['source-dir'];
-        const sfdmuDir = flags['sfdmu-dir'] ?? 'out';
+        const sfdmuDir = flags['sfdmu-dir'];
         const configFile = flags['config-file'];
         const operations = flags['operations'].split(';') as Operation[];
         await yaml2csv({

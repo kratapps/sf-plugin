@@ -31,7 +31,7 @@ export async function csv2yaml({
 }: Options) {
     const csvFileBaseName = path.basename(csvFile, path.extname(csvFile));
     let sObjectName = objectName ?? csvFileBaseName;
-    const dir = sourceDir ?? 'src';
+    const dir = sourceDir ?? 'data';
     const objectDir = path.join(dir, sObjectName);
     const recordsDir = path.join(objectDir, 'records');
     if (!preserveExisting) {

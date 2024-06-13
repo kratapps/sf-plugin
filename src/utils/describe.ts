@@ -20,7 +20,7 @@ async function describeObjectCall(
     objectName: string,
     { outputDir, refreshSchema }: { outputDir: string; refreshSchema?: boolean }
 ): Promise<DescribeSObjectResult> {
-    const file = path.join(outputDir, objectName, `meta/describe.json`);
+    const file = path.join(outputDir, objectName, `describe.json`);
     async function reload() {
         const describe = await conn.describe(objectName);
         await writeJson(file, describe);

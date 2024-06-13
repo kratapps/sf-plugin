@@ -28,7 +28,8 @@ export default class KratappsDataSfdmuCsv2yaml extends SfCommand<KratappsDataSfd
             summary: messages.getMessage('flags.config-file.summary')
         }),
         'source-dir': Flags.string({
-            summary: messages.getMessage('flags.source-dir.summary')
+            summary: messages.getMessage('flags.source-dir.summary'),
+            default: 'data'
         }),
         'schema-org': Flags.optionalOrg({
             summary: messages.getMessage('flags.schema-org.summary'),

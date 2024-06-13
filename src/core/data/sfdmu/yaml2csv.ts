@@ -26,7 +26,7 @@ export async function yaml2csv({ sourceDir, configFile, sfdmuDir, operations }: 
                 console.error(`Source directory doesn't exist: ${yamlDir}`);
             }
         } else {
-            console.log(`Operation "${operations}" not configured for convert. Target ignored: ${objectName}`);
+            console.log(`Operation "${operation}" not configured for convert. Target ignored: ${objectName}`);
         }
     }
 }

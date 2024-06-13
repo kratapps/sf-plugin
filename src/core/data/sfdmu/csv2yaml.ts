@@ -29,7 +29,7 @@ export async function csv2yaml({ preserveExisting, sfdmuDir, configFile, sourceD
                 externalValueSeparator: ';'
             });
         } else {
-            console.log(`Operation "${operations}" not configured for convert. Target ignored: ${objectName}`);
+            console.log(`Operation "${operation}" not configured for convert. Target ignored: ${objectName}`);
         }
     }
 }
