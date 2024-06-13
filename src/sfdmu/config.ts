@@ -1,4 +1,5 @@
-import { readJson } from '../utils/fs.js';
+import { readJson, writeJson } from '../utils/fs.js';
+import path from 'path';
 
 export interface SfdmuConfig {
     excludeIdsFromCSVFiles?: boolean;
@@ -20,6 +21,10 @@ export async function loadConfig(exportFile: string): Promise<SfdmuConfig> {
         objectConfig.objectName = parseObjectNameFromSoql(objectConfig.query);
     }
     return config;
+}
+
+export async function writeConfig(sfdmuDir: string, config: SfdmuConfig) {
+    await writeJson(path.join(sfdmuDir, 'export.json'), config);
 }
 
 function parseObjectNameFromSoql(soql: string): string {

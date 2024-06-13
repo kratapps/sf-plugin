@@ -3,7 +3,7 @@ import { Optional } from '@salesforce/ts-types';
 import { emptyDir } from 'fs-extra';
 import { Field } from 'jsforce';
 import path from 'path';
-import { readCsvStream, sanitizeFile, writeYaml } from '../../utils/fs.js';
+import { ensureDir, readCsvStream, sanitizeFile, writeYaml } from '../../utils/fs.js';
 import { deepFieldDescribe, describeObject, FieldDeepDescribe } from '../../utils/describe.js';
 import { describeFieldsMeta, FieldsMeta } from './meta/describeFieldsMeta.js';
 
@@ -34,6 +34,7 @@ export async function csv2yaml({
     const dir = sourceDir ?? 'data';
     const objectDir = path.join(dir, sObjectName);
     const recordsDir = path.join(objectDir, 'records');
+    await ensureDir(recordsDir);
     if (!preserveExisting) {
         await emptyDir(recordsDir);
     }

@@ -5,13 +5,12 @@ import { dirExists } from '../../../utils/fs.js';
 
 interface Options {
     sourceDir: string;
-    configFile?: string;
     sfdmuDir: string;
     operations: Operation[];
 }
 
-export async function yaml2csv({ sourceDir, configFile, sfdmuDir, operations }: Options) {
-    const config = await loadConfig(configFile ?? path.join(sfdmuDir, 'export.json'));
+export async function yaml2csv({ sourceDir, sfdmuDir, operations }: Options) {
+    const config = await loadConfig(path.join(sfdmuDir, 'export.json'));
     for (let { objectName, operation } of config.objects) {
         if (operations.includes(operation)) {
             const yamlDir = path.join(sourceDir, objectName, 'records');

@@ -42,10 +42,12 @@ interface Options {
     isNotUnique?: boolean;
     isUpdateable?: boolean;
     isNotUpdateable?: boolean;
+
+    refreshSchema?: boolean;
 }
 
 export async function generateQuery(conn: Connection, objectName: string, outputDir: string, opts: Options): Promise<Query> {
-    const describe = await describeObject(conn, objectName, { outputDir, refreshSchema: false });
+    const describe = await describeObject(conn, objectName, { outputDir, refreshSchema: opts.refreshSchema ?? false });
     const fields = describe.fields
         .map((it) => {
             const result: string[] = [];
@@ -99,8 +101,9 @@ export async function generateQuery(conn: Connection, objectName: string, output
     return {
         fields,
         toQueryString({ pretty } = { pretty: false }) {
-            const fieldsString = fields.map((it) => `${pretty ? '    ' : ''}${it}`).join(pretty ? ',\n' : ',');
-            return `SELECT${pretty ? '\n' : ''}${fieldsString}${pretty ? '\n' : ''}FROM ${objectName}`;
+            const nl = pretty ? '\n' : '';
+            const fieldsString = fields.map((it) => `${pretty ? '    ' : ''}${it}`).join(`,${nl}`);
+            return `SELECT${nl}${fieldsString}${nl}FROM ${objectName}${nl}`;
         }
     };
 }

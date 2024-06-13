@@ -7,15 +7,14 @@ import path from 'path';
 interface Options {
     preserveExisting: boolean;
     sfdmuDir: string;
-    configFile?: string;
     sourceDir?: string;
     schemaOrg?: Optional<Org>;
     refreshSchema: boolean;
     operations: Operation[];
 }
 
-export async function csv2yaml({ preserveExisting, sfdmuDir, configFile, sourceDir, schemaOrg, refreshSchema, operations }: Options) {
-    const config = await loadConfig(configFile ?? path.join(sfdmuDir, 'export.json'));
+export async function csv2yaml({ preserveExisting, sfdmuDir, sourceDir, schemaOrg, refreshSchema, operations }: Options) {
+    const config = await loadConfig(path.join(sfdmuDir, 'export.json'));
     for (let { objectName, externalId, operation } of config.objects) {
         if (operations.includes(operation)) {
             await coreCsv2yaml({

@@ -14,12 +14,16 @@ export async function fileExists(file: string): Promise<boolean> {
     }
 }
 
-export async function dirExists(file: string): Promise<boolean> {
+export async function dirExists(dir: string): Promise<boolean> {
     try {
-        return (await fs.stat(file)).isDirectory();
+        return (await fs.stat(dir)).isDirectory();
     } catch {
         return false;
     }
+}
+
+export async function ensureDir(dir: string): Promise<void> {
+    return fs.ensureDir(dir);
 }
 
 export async function readYaml(file: string): Promise<any> {
