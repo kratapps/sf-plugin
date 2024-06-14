@@ -29,7 +29,7 @@ USAGE
     [--external-value-separator <value>]
 
 FLAGS
-  -o, --schema-org=<value>                Org to describe the objects.
+  -o, --target-org=<value>                Org to describe the objects.
       --csv-file=<value>                  (required) Full file path for CSV file to convert.
       --external-id=<value>               (required) External ID used to name the generated file.
       --external-id-separator=<value>     [default: ;] Separator for composite external ID flag.
@@ -55,7 +55,7 @@ EXAMPLES
   $ sf kratapps data csv2yaml
 
 FLAG DESCRIPTIONS
-  -o, --schema-org=<value>  Org to describe the objects.
+  -o, --target-org=<value>  Org to describe the objects.
 
     When objects are described, fields such as numbers or booleans are parsed correctly and not retained as strings.
 
@@ -76,45 +76,46 @@ Generate SOQL.
 USAGE
   $ sf kratapps query generate -o <value> --object-name <value> [--json] [--by-default all|none] [--type-is <value>]
     [--type-is-not <value>] [--name-is <value>] [--name-is-not <value>] [--relationship-name-is <value>]
-    [--relationship-name-is-not <value>] [--add-parent-field <value>] [--add-ref-field <value>] [--is-auto-number]
-    [--is-not-auto-number] [--is-calculated] [--is-not-calculate] [--is-createable] [--is-not-createable] [--is-custom]
-    [--is-not-custom] [--is-encrypted] [--is-not-encrypted] [--is-external-id] [--is-not-external-id] [--is-name-field]
-    [--is-not-name-field] [--is-nillable] [--is-not-nillable] [--is-unique] [--is-not-unique] [--is-updateable]
-    [--is-not-updateable]
+    [--relationship-name-is-not <value>] [--is-auto-number] [--is-not-auto-number] [--is-calculated]
+    [--is-not-calculate] [--is-createable] [--is-not-createable] [--is-custom] [--is-not-custom] [--is-encrypted]
+    [--is-not-encrypted] [--is-external-id] [--is-not-external-id] [--is-name-field] [--is-not-name-field]
+    [--is-nillable] [--is-not-nillable] [--is-unique] [--is-not-unique] [--is-updateable] [--is-not-updateable]
+    [--add-parent-field <value>] [--add-ref-field <value>]
 
 FLAGS
-  -o, --target-org=<value>                   (required) Username or alias of the target org.
-      --add-parent-field=<value>...          todo
-      --add-ref-field=<value>...             todo
-      --by-default=<option>                  [default: all] todo
+  -o, --target-org=<value>                   (required) Username or alias of the target org to describe objects.
+      --add-parent-field=<value>...          Add fields from relationship by relationship name.
+      --add-ref-field=<value>...             Add fields from relationship by referenced object.
+      --by-default=<option>                  [default: all] Add 'all' fields and then filter out or add 'none' and
+                                             filter in.
                                              <options: all|none>
-      --is-auto-number                       todo
-      --is-calculated                        todo
-      --is-createable                        todo
-      --is-custom                            todo
-      --is-encrypted                         todo
-      --is-external-id                       todo
-      --is-name-field                        todo
-      --is-nillable                          todo
-      --is-not-auto-number                   todo
-      --is-not-calculate                     todo
-      --is-not-createable                    todo
-      --is-not-custom                        todo
-      --is-not-encrypted                     todo
-      --is-not-external-id                   todo
-      --is-not-name-field                    todo
-      --is-not-nillable                      todo
-      --is-not-unique                        todo
-      --is-not-updateable                    todo
-      --is-unique                            todo
-      --is-updateable                        todo
-      --name-is=<value>...                   todo
-      --name-is-not=<value>...               todo
-      --object-name=<value>                  (required) todo
-      --relationship-name-is=<value>...      todo
-      --relationship-name-is-not=<value>...  todo
-      --type-is=<value>...                   todo
-      --type-is-not=<value>...               todo
+      --is-auto-number                       Add auto number fields.
+      --is-calculated                        Add calculated fields.
+      --is-createable                        Add createable fields.
+      --is-custom                            Add custom fields.
+      --is-encrypted                         Add encrypted fields.
+      --is-external-id                       Add external ID fields.
+      --is-name-field                        Add name fields.
+      --is-nillable                          Add nillable fields.
+      --is-not-auto-number                   Exclude auto number fields.
+      --is-not-calculate                     Exclude calculated fields.
+      --is-not-createable                    Exclude createable fields.
+      --is-not-custom                        Exclude custom fields.
+      --is-not-encrypted                     Exclude encrypted fields.
+      --is-not-external-id                   Exclude external ID fields.
+      --is-not-name-field                    Exclude name fields.
+      --is-not-nillable                      Exclude nillable fields.
+      --is-not-unique                        Exclude unique fields.
+      --is-not-updateable                    Exclude updateable fields.
+      --is-unique                            Add unique fields.
+      --is-updateable                        Add updateable fields.
+      --name-is=<value>...                   Add fields by name.
+      --name-is-not=<value>...               Exclude fields by name.
+      --object-name=<value>                  (required) Target object name for which to generate SOQL.
+      --relationship-name-is=<value>...      Add fields by relationship name.
+      --relationship-name-is-not=<value>...  Exclude fields by relationship name.
+      --type-is=<value>...                   Add fields by type.
+      --type-is-not=<value>...               Exclude fields by type.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -126,6 +127,17 @@ DESCRIPTION
 
 EXAMPLES
   $ sf kratapps query generate
+
+FLAG DESCRIPTIONS
+  --add-parent-field=<value>...  Add fields from relationship by relationship name.
+
+    <relationshipName>.<fieldsCommaSeparated>
+    For example to include Name and Username from LastModifiedBy relationship "LastModifiedBy.Name,Username"
+
+  --add-ref-field=<value>...  Add fields from relationship by referenced object.
+
+    <relationshipObjectName>:<fieldsCommaSeparated>
+    For example to include Name and Username from any relationship to User "User:Name,Username"
 ```
 
 ## `sf kratapps remote deploy start`
@@ -199,7 +211,7 @@ USAGE
     [--refresh-schema] [--operations <value>]
 
 FLAGS
-  -o, --schema-org=<value>  Org to describe the objects.
+  -o, --target-org=<value>  Org to describe the objects.
       --operations=<value>  [default: Insert;Update;Upsert] Filter object configuration based on SFDMU operation.
       --preserve-existing   Retain existing records in the output directory.
       --refresh-schema      Retrieve objects describe even when cached.
@@ -221,14 +233,14 @@ EXAMPLES
   $ sf kratapps sfdmu csv2yaml
 
 FLAG DESCRIPTIONS
-  -o, --schema-org=<value>  Org to describe the objects.
+  -o, --target-org=<value>  Org to describe the objects.
 
     When objects are described, fields such as numbers or booleans are parsed correctly and not retained as strings.
 ```
 
 ## `sf kratapps sfdmu prepare backup`
 
-BETA command.
+Simplify data backups into git using the SFDMU plugin.
 
 ```
 USAGE
@@ -239,15 +251,15 @@ FLAGS
   -o, --target-org=<value>  Org to describe the objects.
       --refresh-schema      Retrieve objects describe even when cached.
       --sfdmu-dir=<value>   [default: out] SFDMU root directory for generated script.
-      --source-dir=<value>  [default: data] Directory root with custom config.
+      --source-dir=<value>  [default: data] Directory root with custom backup.yaml config.
 
 GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  BETA command.
+  Simplify data backups into git using the SFDMU plugin.
 
-  TODO
+  Prepares data backup configuration for SFDMU plugin.
 
 EXAMPLES
   $ sf kratapps sfdmu prepare backup
@@ -255,7 +267,7 @@ EXAMPLES
 FLAG DESCRIPTIONS
   -o, --target-org=<value>  Org to describe the objects.
 
-    Require for query generation.
+    Required for query generation.
 ```
 
 ## `sf kratapps sfdmu yaml2csv`

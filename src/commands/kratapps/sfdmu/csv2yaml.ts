@@ -29,9 +29,9 @@ export default class KratappsSfdmuCsv2yaml extends SfCommand<KratappsSfdmuCsv2ya
             summary: messages.getMessage('flags.source-dir.summary'),
             default: 'data'
         }),
-        'schema-org': Flags.optionalOrg({
-            summary: messages.getMessage('flags.schema-org.summary'),
-            description: messages.getMessage('flags.schema-org.description')
+        'target-org': Flags.optionalOrg({
+            summary: messages.getMessage('flags.target-org.summary'),
+            description: messages.getMessage('flags.target-org.description')
         }),
         'refresh-schema': Flags.boolean({
             summary: messages.getMessage('flags.refresh-schema.summary'),
@@ -48,14 +48,14 @@ export default class KratappsSfdmuCsv2yaml extends SfCommand<KratappsSfdmuCsv2ya
         const preserveExisting = flags['preserve-existing'];
         const sfdmuDir = flags['sfdmu-dir'];
         const sourceDir = flags['source-dir'];
-        const schemaOrg = flags['schema-org'];
+        const targetOrg = flags['target-org'];
         const refreshSchema = flags['refresh-schema'];
         const operations = flags['operations'].split(';') as Operation[];
         await csv2yaml({
             preserveExisting,
             sfdmuDir,
             sourceDir,
-            schemaOrg,
+            targetOrg,
             refreshSchema,
             operations
         });

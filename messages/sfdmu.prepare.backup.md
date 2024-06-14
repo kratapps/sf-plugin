@@ -1,10 +1,10 @@
 # summary
 
-BETA command.
+Simplify data backups into git using the SFDMU plugin.
 
 # description
 
-TODO
+Prepares data backup configuration for SFDMU plugin.
 
 # flags.sfdmu-dir.summary
 
@@ -12,7 +12,7 @@ SFDMU root directory for generated script.
 
 # flags.source-dir.summary
 
-Directory root with custom config.
+Directory root with custom backup.yaml config.
 
 # flags.target-org.summary
 
@@ -20,11 +20,7 @@ Org to describe the objects.
 
 # flags.target-org.description
 
-Require for query generation.
-
-# flags.generate-queries.description
-
-Automatically generate SOQL queries for backup.
+Required for query generation.
 
 # flags.refresh-schema.summary
 

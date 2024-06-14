@@ -8,12 +8,12 @@ interface Options {
     preserveExisting: boolean;
     sfdmuDir: string;
     sourceDir?: string;
-    schemaOrg?: Optional<Org>;
+    targetOrg?: Optional<Org>;
     refreshSchema: boolean;
     operations: Operation[];
 }
 
-export async function csv2yaml({ preserveExisting, sfdmuDir, sourceDir, schemaOrg, refreshSchema, operations }: Options) {
+export async function csv2yaml({ preserveExisting, sfdmuDir, sourceDir, targetOrg, refreshSchema, operations }: Options) {
     const config = await loadConfig(path.join(sfdmuDir, 'export.json'));
     for (let { objectName, externalId, operation } of config.objects) {
         if (operations.includes(operation)) {
@@ -23,7 +23,7 @@ export async function csv2yaml({ preserveExisting, sfdmuDir, sourceDir, schemaOr
                 csvFile: path.join(sfdmuDir, `${objectName}.csv`),
                 objectName,
                 sourceDir,
-                schemaOrg,
+                targetOrg,
                 refreshSchema,
                 externalValueSeparator: ';'
             });

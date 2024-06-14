@@ -38,11 +38,11 @@ Parsed from the CSV file name if not specified.
 
 Directory root for the generated record files.
 
-# flags.schema-org.summary
+# flags.target-org.summary
 
 Org to describe the objects.
 
-# flags.schema-org.description
+# flags.target-org.description
 
 When objects are described, fields such as numbers or booleans are parsed correctly and not retained as strings.
 

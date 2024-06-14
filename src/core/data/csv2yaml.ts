@@ -14,7 +14,7 @@ interface Options {
     csvFile: string;
     objectName?: string;
     sourceDir?: string;
-    schemaOrg?: Optional<Org>;
+    targetOrg?: Optional<Org>;
     refreshSchema: boolean;
     externalValueSeparator: string;
 }
@@ -25,7 +25,7 @@ export async function csv2yaml({
     csvFile,
     objectName,
     sourceDir,
-    schemaOrg,
+    targetOrg,
     refreshSchema,
     externalValueSeparator
 }: Options) {
@@ -38,7 +38,7 @@ export async function csv2yaml({
     if (!preserveExisting) {
         await emptyDir(recordsDir);
     }
-    const describe = schemaOrg ? await describeObject(schemaOrg?.getConnection(), sObjectName, { outputDir: dir, refreshSchema }) : null;
+    const describe = targetOrg ? await describeObject(targetOrg?.getConnection(), sObjectName, { outputDir: dir, refreshSchema }) : null;
     const fileNamesCounter = new Map<string, number>();
     let headers: string[] | undefined;
     let externalIndexes: number[] = [];
@@ -54,9 +54,9 @@ export async function csv2yaml({
             if (externalId.length !== externalIndexes.length) {
                 throw Error('Some external IDs not found in the CSV.');
             }
-            if (schemaOrg) {
+            if (targetOrg) {
                 for (let field of headers) {
-                    fieldRecursive[field] = await deepFieldDescribe(schemaOrg.getConnection(), sObjectName ?? csvFileBaseName, field, {
+                    fieldRecursive[field] = await deepFieldDescribe(targetOrg.getConnection(), sObjectName ?? csvFileBaseName, field, {
                         outputDir: dir,
                         refreshSchema
                     });

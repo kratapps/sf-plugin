@@ -73,7 +73,7 @@ export async function prepareBackup({ sfdmuDir, sourceDir, targetOrg, refreshSch
             queryString = await readFile(queryFile);
         } else if (!configQueryFile) {
             if (!conn) {
-                throw Error('Flag --schema-org needs to be set to generate queries dynamically.');
+                throw Error('Flag --target-org needs to be set to generate queries dynamically.');
             }
             const query = await generateQuery(
                 conn,
@@ -85,7 +85,7 @@ export async function prepareBackup({ sfdmuDir, sourceDir, targetOrg, refreshSch
             queryString = query.toQueryString({ pretty: true });
             await writeFile(path.join(objectDir, 'query.soql'), queryString);
         } else {
-            throw Error(`Either set --schema-org to generate the query dynamically or create a query file: ${queryFile}`);
+            throw Error(`Either set --target-org to generate the query dynamically or create a query file: ${queryFile}`);
         }
         sfdmuConfig.objects.push({
             objectName,

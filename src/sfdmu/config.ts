@@ -25,8 +25,7 @@ export async function loadConfig(exportFile: string): Promise<SfdmuConfig> {
 
 export async function writeConfig(sfdmuDir: string, config: SfdmuConfig) {
     const exportJson = path.join(sfdmuDir, 'export.json');
-    console.log('Writing SFDMU config: ', exportJson);
-    console.log(JSON.stringify(config, null, 2));
+    console.log('Writing SFDMU config:', exportJson);
     await writeJson(exportJson, config);
 }
 

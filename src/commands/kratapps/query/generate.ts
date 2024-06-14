@@ -26,7 +26,7 @@ export default class KratappsQueryGenerate extends SfCommand<KratappsQueryGenera
             required: true
         }),
         'by-default': Flags.string({
-            summary: messages.getMessage('flags.type-is.summary'),
+            summary: messages.getMessage('flags.by-default.summary'),
             default: 'all',
             options: ['all', 'none']
         }),
@@ -35,92 +35,94 @@ export default class KratappsQueryGenerate extends SfCommand<KratappsQueryGenera
             multiple: true
         }),
         'type-is-not': Flags.string({
-            summary: messages.getMessage('flags.type-is.summary'),
+            summary: messages.getMessage('flags.type-is-not.summary'),
             multiple: true
         }),
         'name-is': Flags.string({
-            summary: messages.getMessage('flags.type-is.summary'),
+            summary: messages.getMessage('flags.name-is.summary'),
             multiple: true
         }),
         'name-is-not': Flags.string({
-            summary: messages.getMessage('flags.type-is.summary'),
+            summary: messages.getMessage('flags.name-is-not.summary'),
             multiple: true
         }),
         'relationship-name-is': Flags.string({
-            summary: messages.getMessage('flags.type-is.summary'),
+            summary: messages.getMessage('flags.relationship-name-is.summary'),
             multiple: true
         }),
         'relationship-name-is-not': Flags.string({
-            summary: messages.getMessage('flags.type-is.summary'),
-            multiple: true
-        }),
-        'add-parent-field': Flags.string({
-            summary: messages.getMessage('flags.is-custom.summary'),
-            multiple: true
-        }),
-        'add-ref-field': Flags.string({
-            summary: messages.getMessage('flags.is-custom.summary'),
+            summary: messages.getMessage('flags.relationship-name-is-not.summary'),
             multiple: true
         }),
         'is-auto-number': Flags.boolean({
             summary: messages.getMessage('flags.is-auto-number.summary')
         }),
         'is-not-auto-number': Flags.boolean({
-            summary: messages.getMessage('flags.is-auto-number.summary')
+            summary: messages.getMessage('flags.is-not-auto-number.summary')
         }),
         'is-calculated': Flags.boolean({
-            summary: messages.getMessage('flags.is-auto-number.summary')
+            summary: messages.getMessage('flags.is-calculated.summary')
         }),
         'is-not-calculate': Flags.boolean({
-            summary: messages.getMessage('flags.is-auto-number.summary')
+            summary: messages.getMessage('flags.is-not-calculate.summary')
         }),
         'is-createable': Flags.boolean({
-            summary: messages.getMessage('flags.is-auto-number.summary')
+            summary: messages.getMessage('flags.is-createable.summary')
         }),
         'is-not-createable': Flags.boolean({
-            summary: messages.getMessage('flags.is-auto-number.summary')
+            summary: messages.getMessage('flags.is-not-createable.summary')
         }),
         'is-custom': Flags.boolean({
             summary: messages.getMessage('flags.is-custom.summary')
         }),
         'is-not-custom': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-not-custom.summary')
         }),
         'is-encrypted': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-encrypted.summary')
         }),
         'is-not-encrypted': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-not-encrypted.summary')
         }),
         'is-external-id': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-external-id.summary')
         }),
         'is-not-external-id': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-not-external-id.summary')
         }),
         'is-name-field': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-name-field.summary')
         }),
         'is-not-name-field': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-not-name-field.summary')
         }),
         'is-nillable': Flags.boolean({
-            summary: messages.getMessage('flags.type-is.summary')
+            summary: messages.getMessage('flags.is-nillable.summary')
         }),
         'is-not-nillable': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-not-nillable.summary')
         }),
         'is-unique': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-unique.summary')
         }),
         'is-not-unique': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-not-unique.summary')
         }),
         'is-updateable': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-updateable.summary')
         }),
         'is-not-updateable': Flags.boolean({
-            summary: messages.getMessage('flags.is-custom.summary')
+            summary: messages.getMessage('flags.is-not-updateable.summary')
+        }),
+        'add-parent-field': Flags.string({
+            summary: messages.getMessage('flags.add-parent-field.summary'),
+            description: messages.getMessage('flags.add-parent-field.description'),
+            multiple: true
+        }),
+        'add-ref-field': Flags.string({
+            summary: messages.getMessage('flags.add-ref-field.summary'),
+            description: messages.getMessage('flags.add-ref-field.description'),
+            multiple: true
         })
     };
 
