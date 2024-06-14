@@ -1,21 +1,20 @@
 import { Org } from '@salesforce/core';
 import { Optional } from '@salesforce/ts-types';
-import { loadConfig, Operation } from '../../../sfdmu/config.js';
-import { csv2yaml as coreCsv2yaml } from '../../../core/data/csv2yaml.js';
+import { loadConfig, Operation } from '../../sfdmu/config.js';
+import { csv2yaml as coreCsv2yaml } from '../data/csv2yaml.js';
 import path from 'path';
 
 interface Options {
     preserveExisting: boolean;
     sfdmuDir: string;
-    configFile?: string;
     sourceDir?: string;
-    schemaOrg?: Optional<Org>;
+    targetOrg?: Optional<Org>;
     refreshSchema: boolean;
     operations: Operation[];
 }
 
-export async function csv2yaml({ preserveExisting, sfdmuDir, configFile, sourceDir, schemaOrg, refreshSchema, operations }: Options) {
-    const config = await loadConfig(configFile ?? path.join(sfdmuDir, 'export.json'));
+export async function csv2yaml({ preserveExisting, sfdmuDir, sourceDir, targetOrg, refreshSchema, operations }: Options) {
+    const config = await loadConfig(path.join(sfdmuDir, 'export.json'));
     for (let { objectName, externalId, operation } of config.objects) {
         if (operations.includes(operation)) {
             await coreCsv2yaml({
@@ -24,12 +23,12 @@ export async function csv2yaml({ preserveExisting, sfdmuDir, configFile, sourceD
                 csvFile: path.join(sfdmuDir, `${objectName}.csv`),
                 objectName,
                 sourceDir,
-                schemaOrg,
+                targetOrg,
                 refreshSchema,
                 externalValueSeparator: ';'
             });
         } else {
-            console.log(`Operation "${operations}" not configured for convert. Target ignored: ${objectName}`);
+            console.log(`Operation "${operation}" not configured for convert. Target ignored: ${objectName}`);
         }
     }
 }

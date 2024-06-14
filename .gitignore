@@ -52,3 +52,4 @@ test/
 yarn.lock
 Makefile
 npm-shrinkwrap.json
+data/

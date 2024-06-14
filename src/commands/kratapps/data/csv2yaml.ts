@@ -33,9 +33,9 @@ export default class KratappsDataCsv2yaml extends SfCommand<KratappsDataCsv2yaml
         'source-dir': Flags.string({
             summary: messages.getMessage('flags.source-dir.summary')
         }),
-        'schema-org': Flags.optionalOrg({
-            summary: messages.getMessage('flags.schema-org.summary'),
-            description: messages.getMessage('flags.schema-org.description')
+        'target-org': Flags.optionalOrg({
+            summary: messages.getMessage('flags.target-org.summary'),
+            description: messages.getMessage('flags.target-org.description')
         }),
         'refresh-schema': Flags.boolean({
             summary: messages.getMessage('flags.refresh-schema.summary'),
@@ -58,7 +58,7 @@ export default class KratappsDataCsv2yaml extends SfCommand<KratappsDataCsv2yaml
         const csvFile = flags['csv-file'];
         const objectName = flags['object-name'];
         const sourceDir = flags['source-dir'];
-        const schemaOrg = flags['schema-org'];
+        const targetOrg = flags['target-org'];
         const refreshSchema = flags['refresh-schema'];
         const externalIdSeparator = flags['external-id-separator'];
         const externalValueSeparator = flags['external-value-separator'];
@@ -69,7 +69,7 @@ export default class KratappsDataCsv2yaml extends SfCommand<KratappsDataCsv2yaml
             csvFile,
             objectName,
             sourceDir,
-            schemaOrg,
+            targetOrg,
             refreshSchema
         });
         return {};

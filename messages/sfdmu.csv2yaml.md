@@ -16,19 +16,15 @@ Retain existing records in the output directory.
 
 SFDMU root directory containing the retrieved CSV files.
 
-# flags.config-file.summary
-
-Full file path for SFDMU config (export.json).
-
 # flags.source-dir.summary
 
 Directory root for the generated record files.
 
-# flags.schema-org.summary
+# flags.target-org.summary
 
 Org to describe the objects.
 
-# flags.schema-org.description
+# flags.target-org.description
 
 When objects are described, fields such as numbers or booleans are parsed correctly and not retained as strings.
 
