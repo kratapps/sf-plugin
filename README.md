@@ -70,7 +70,7 @@ FLAG DESCRIPTIONS
 
 ## `sf kratapps query generate`
 
-Generate SOQL.
+BETA command. Generate SOQL.
 
 ```
 USAGE
@@ -121,9 +121,9 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Generate SOQL.
+  BETA command. Generate SOQL.
 
-  todo
+  Generate SOQL via CLI. Used by `sf kratapps sfdmu prepare backup` to create queries dynamically.
 
 EXAMPLES
   $ sf kratapps query generate
