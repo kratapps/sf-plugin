@@ -22,9 +22,9 @@ export default class KratappsSfdmuBackupPrepare extends SfCommand<KratappsSfdmuB
             default: 'data',
             exists: true
         }),
-        'schema-org': Flags.optionalOrg({
-            summary: messages.getMessage('flags.schema-org.summary'),
-            description: messages.getMessage('flags.schema-org.description')
+        'target-org': Flags.optionalOrg({
+            summary: messages.getMessage('flags.target-org.summary'),
+            description: messages.getMessage('flags.target-org.description')
         }),
         'refresh-schema': Flags.boolean({
             summary: messages.getMessage('flags.refresh-schema.summary'),
@@ -37,7 +37,7 @@ export default class KratappsSfdmuBackupPrepare extends SfCommand<KratappsSfdmuB
         await prepareBackup({
             sfdmuDir: flags['sfdmu-dir'],
             sourceDir: flags['source-dir'],
-            schemaOrg: flags['schema-org'],
+            targetOrg: flags['target-org'],
             refreshSchema: flags['refresh-schema']
         });
         return {};

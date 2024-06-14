@@ -5,20 +5,18 @@
 -->
 
 <!-- toc -->
-
-- [kratapps sf plugin](#kratapps-sf-plugin)
+* [kratapps sf plugin](#kratapps-sf-plugin)
 <!-- tocstop -->
 
 <!-- install -->
 
 <!-- commands -->
-
-- [`sf kratapps data csv2yaml`](#sf-kratapps-data-csv2yaml)
-- [`sf kratapps query generate`](#sf-kratapps-query-generate)
-- [`sf kratapps remote deploy start`](#sf-kratapps-remote-deploy-start)
-- [`sf kratapps sfdmu csv2yaml`](#sf-kratapps-sfdmu-csv2yaml)
-- [`sf kratapps sfdmu prepare backup`](#sf-kratapps-sfdmu-prepare-backup)
-- [`sf kratapps sfdmu yaml2csv`](#sf-kratapps-sfdmu-yaml2csv)
+* [`sf kratapps data csv2yaml`](#sf-kratapps-data-csv2yaml)
+* [`sf kratapps query generate`](#sf-kratapps-query-generate)
+* [`sf kratapps remote deploy start`](#sf-kratapps-remote-deploy-start)
+* [`sf kratapps sfdmu csv2yaml`](#sf-kratapps-sfdmu-csv2yaml)
+* [`sf kratapps sfdmu prepare backup`](#sf-kratapps-sfdmu-prepare-backup)
+* [`sf kratapps sfdmu yaml2csv`](#sf-kratapps-sfdmu-yaml2csv)
 
 ## `sf kratapps data csv2yaml`
 
@@ -238,7 +236,7 @@ USAGE
   [--refresh-schema]
 
 FLAGS
-  -o, --schema-org=<value>  Org to describe the objects.
+  -o, --target-org=<value>  Org to describe the objects.
       --refresh-schema      Retrieve objects describe even when cached.
       --sfdmu-dir=<value>   [default: out] SFDMU root directory for generated script.
       --source-dir=<value>  [default: data] Directory root with custom config.
@@ -255,7 +253,7 @@ EXAMPLES
   $ sf kratapps sfdmu prepare backup
 
 FLAG DESCRIPTIONS
-  -o, --schema-org=<value>  Org to describe the objects.
+  -o, --target-org=<value>  Org to describe the objects.
 
     Require for query generation.
 ```
@@ -287,5 +285,4 @@ DESCRIPTION
 EXAMPLES
   $ sf kratapps sfdmu yaml2csv
 ```
-
 <!-- commandsstop -->

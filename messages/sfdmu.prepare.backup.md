@@ -14,17 +14,17 @@ SFDMU root directory for generated script.
 
 Directory root with custom config.
 
-# flags.schema-org.summary
+# flags.target-org.summary
 
 Org to describe the objects.
+
+# flags.target-org.description
+
+Require for query generation.
 
 # flags.generate-queries.description
 
 Automatically generate SOQL queries for backup.
-
-# flags.schema-org.description
-
-Require for query generation.
 
 # flags.refresh-schema.summary
 

@@ -1,56 +1,71 @@
 import { Org } from '@salesforce/core';
-import { has, hasArray, hasBoolean, hasString, isBoolean, isObject, isString, Optional } from '@salesforce/ts-types';
+import { ensure, has, hasArray, hasBoolean, hasString, isBoolean, isObject, isString, Optional } from '@salesforce/ts-types';
 import path from 'path';
 import { ensureDir, readFile, readYaml, writeFile } from '../../../utils/fs.js';
 import { isPlainObject } from '@salesforce/ts-types/lib/narrowing/is.js';
-import { generateQuery } from '../../query/generate.js';
+import { generateQuery, isGenerateQueryOptions, mergeGenerateQueryOptions } from '../../query/generate.js';
 import { emptyDir } from 'fs-extra';
 import { SfdmuConfig, writeConfig } from '../../../sfdmu/config.js';
+import { GenerateQueryOptions } from '../../query/generate.js';
 
 interface Options {
     sfdmuDir: string;
     sourceDir: string;
-    schemaOrg?: Optional<Org>;
+    targetOrg?: Optional<Org>;
     refreshSchema: boolean;
 }
 
 interface BackupConfig {
     objects: BackupObjectConfig[];
+    options?: GenerateQueryOptions;
 }
 
-function isBackupConfig(obj: unknown): obj is BackupConfig {
-    return isObject(obj) && hasArray(obj, 'objects') && obj.objects.every(isBackupObjectConfig);
+function ensureBackupConfig(value: unknown, message?: string): BackupConfig {
+    return ensure(asBackupConfig(value), message ?? 'Not a valid backup config.');
+}
+
+function asBackupConfig(value: unknown): Optional<BackupConfig> {
+    return isBackupConfig(value) ? value : undefined;
+}
+
+function isBackupConfig(value: unknown): value is BackupConfig {
+    return (
+        isObject(value) &&
+        hasArray(value, 'objects') &&
+        value.objects.every(isBackupObjectConfig) &&
+        (!has(value, 'options') || isGenerateQueryOptions(value.options))
+    );
 }
 
 interface BackupObjectConfig {
     objectName: string;
     queryFile?: boolean | string;
+    options?: GenerateQueryOptions;
 }
 
-function isBackupObjectConfig(obj: unknown): obj is BackupObjectConfig {
+function isBackupObjectConfig(value: unknown): value is BackupObjectConfig {
     return (
-        isPlainObject(obj) &&
-        hasString(obj, 'objectName') &&
-        (!has(obj, 'queryFile') || hasBoolean(obj, 'queryFile') || hasString(obj, 'queryFile'))
+        isPlainObject(value) &&
+        hasString(value, 'objectName') &&
+        (!has(value, 'queryFile') || hasBoolean(value, 'queryFile') || hasString(value, 'queryFile')) &&
+        (!has(value, 'options') || isGenerateQueryOptions(value.options))
     );
 }
 
 async function loadBackupConfig(sourceDir: string): Promise<BackupConfig> {
     const config = await readYaml(path.join(sourceDir, 'backup.yaml'));
-    if (!isBackupConfig(config)) {
-        throw Error('Invalid backup config.');
-    }
-    return config;
+    return ensureBackupConfig(config);
 }
 
-export async function prepareBackup({ sfdmuDir, sourceDir, schemaOrg, refreshSchema }: Options) {
+export async function prepareBackup({ sfdmuDir, sourceDir, targetOrg, refreshSchema }: Options) {
     await ensureDir(sfdmuDir);
     const backupConfig = await loadBackupConfig(sourceDir);
     const sfdmuConfig: SfdmuConfig = {
         objects: []
     };
-    const conn = schemaOrg ? schemaOrg.getConnection() : null;
-    for (let { objectName, queryFile: configQueryFile } of backupConfig.objects) {
+    const conn = targetOrg?.getConnection();
+    for (let objectConfig of backupConfig.objects) {
+        const { objectName, queryFile: configQueryFile } = objectConfig;
         const objectDir = path.join(sourceDir, objectName);
         const queryFile = isString(configQueryFile) ? configQueryFile : path.join(objectDir, 'query.soql');
         let queryString;
@@ -64,16 +79,7 @@ export async function prepareBackup({ sfdmuDir, sourceDir, schemaOrg, refreshSch
                 conn,
                 objectName,
                 sourceDir,
-                {
-                    byDefault: 'all',
-                    nameIsNot: ['IsDeleted', 'LastActivityDate', 'LastViewedDate', 'LastReferencedDate'],
-                    addParentField: [
-                        { relationshipName: 'Owner', field: 'Username' },
-                        { relationshipName: 'LastModifiedBy', field: 'Username' }
-                    ],
-                    isNotCalculated: true,
-                    isNotEncrypted: true
-                },
+                mergeGenerateQueryOptions(backupConfig.options, objectConfig.options),
                 refreshSchema
             );
             queryString = query.toQueryString({ pretty: true });
