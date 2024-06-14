@@ -1,6 +1,6 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { yaml2csv } from '../../../core/data/sfdmu/yaml2csv.js';
+import { yaml2csv } from '../../../core/sfdmu/yaml2csv.js';
 import { Operation } from '../../../sfdmu/config.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);

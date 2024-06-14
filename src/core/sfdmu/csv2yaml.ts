@@ -1,7 +1,7 @@
 import { Org } from '@salesforce/core';
 import { Optional } from '@salesforce/ts-types';
-import { loadConfig, Operation } from '../../../sfdmu/config.js';
-import { csv2yaml as coreCsv2yaml } from '../../../core/data/csv2yaml.js';
+import { loadConfig, Operation } from '../../sfdmu/config.js';
+import { csv2yaml as coreCsv2yaml } from '../data/csv2yaml.js';
 import path from 'path';
 
 interface Options {

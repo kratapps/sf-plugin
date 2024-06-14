@@ -1,6 +1,6 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { prepareBackup } from '../../../../core/data/sfdmu/prepare/backup.js';
+import { prepareBackup } from '../../../../core/sfdmu/prepare/backup.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('@kratapps/sf-plugin', 'sfdmu.prepare.backup');

@@ -1,7 +1,7 @@
-import { loadConfig, Operation } from '../../../sfdmu/config.js';
+import { loadConfig, Operation } from '../../sfdmu/config.js';
 import path from 'path';
-import { yaml2csv as coreYaml2csv } from '../../../core/data/yaml2csv.js';
-import { dirExists } from '../../../utils/fs.js';
+import { yaml2csv as coreYaml2csv } from '../data/yaml2csv.js';
+import { dirExists } from '../../utils/fs.js';
 
 interface Options {
     sourceDir: string;
