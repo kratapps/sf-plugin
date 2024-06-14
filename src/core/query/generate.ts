@@ -21,6 +21,10 @@ interface Options {
         relationshipName: string;
         field: string;
     }[];
+    addRefField?: {
+        referenceTo: string;
+        field: string;
+    }[];
 
     isAutoNumber?: boolean;
     isNotAutoNumber?: boolean;
@@ -42,58 +46,72 @@ interface Options {
     isNotUnique?: boolean;
     isUpdateable?: boolean;
     isNotUpdateable?: boolean;
-
-    refreshSchema?: boolean;
 }
 
-export async function generateQuery(conn: Connection, objectName: string, outputDir: string, opts: Options): Promise<Query> {
-    const describe = await describeObject(conn, objectName, { outputDir, refreshSchema: opts.refreshSchema ?? false });
+export async function generateQuery(
+    conn: Connection,
+    objectName: string,
+    outputDir: string,
+    opts: Options,
+    refreshSchema: boolean
+): Promise<Query> {
+    const describe = await describeObject(conn, objectName, { outputDir, refreshSchema });
     const fields = describe.fields
-        .map((it) => {
+        .map((describe) => {
             const result: string[] = [];
             if (
-                opts.typeIsNot?.includes(it.type) ||
-                opts.nameIsNot?.includes(it.name) ||
-                (it.relationshipName && opts.relationshipNameIsNot?.includes(it.relationshipName)) ||
-                (opts.isNotAutoNumber && it.autoNumber) ||
-                (opts.isNotCalculated && it.calculated) ||
-                (opts.isNotCreateable && it.createable) ||
-                (opts.isNotCustom && it.custom) ||
-                (opts.isNotEncrypted && it.encrypted) ||
-                (opts.isNotExternalId && it.externalId) ||
-                (opts.isNotNameField && it.nameField) ||
-                (opts.isNotNillable && it.nillable) ||
-                (opts.isNotUnique && it.unique) ||
-                (opts.isNotUpdateable && it.updateable)
+                opts.typeIsNot?.includes(describe.type) ||
+                opts.nameIsNot?.includes(describe.name) ||
+                (describe.relationshipName && opts.relationshipNameIsNot?.includes(describe.relationshipName)) ||
+                (opts.isNotAutoNumber && describe.autoNumber) ||
+                (opts.isNotCalculated && describe.calculated) ||
+                (opts.isNotCreateable && describe.createable) ||
+                (opts.isNotCustom && describe.custom) ||
+                (opts.isNotEncrypted && describe.encrypted) ||
+                (opts.isNotExternalId && describe.externalId) ||
+                (opts.isNotNameField && describe.nameField) ||
+                (opts.isNotNillable && describe.nillable) ||
+                (opts.isNotUnique && describe.unique) ||
+                (opts.isNotUpdateable && describe.updateable)
             ) {
                 return result;
             }
             if (
-                opts.typeIs?.includes(it.type) ||
-                opts.nameIs?.includes(it.name) ||
-                (it.relationshipName && opts.nameIs?.includes(it.name)) ||
-                (opts.isAutoNumber && it.autoNumber) ||
-                (opts.isCalculated && it.calculated) ||
-                (opts.isCreateable && it.createable) ||
-                (opts.isCustom && it.custom) ||
-                (opts.isEncrypted && it.encrypted) ||
-                (opts.isExternalId && it.externalId) ||
-                (opts.isNameField && it.nameField) ||
-                (opts.isNillable && it.nillable) ||
-                (opts.isUnique && it.unique) ||
-                (opts.isUpdateable && it.updateable) ||
+                opts.typeIs?.includes(describe.type) ||
+                opts.nameIs?.includes(describe.name) ||
+                (describe.relationshipName && opts.nameIs?.includes(describe.name)) ||
+                (opts.isAutoNumber && describe.autoNumber) ||
+                (opts.isCalculated && describe.calculated) ||
+                (opts.isCreateable && describe.createable) ||
+                (opts.isCustom && describe.custom) ||
+                (opts.isEncrypted && describe.encrypted) ||
+                (opts.isExternalId && describe.externalId) ||
+                (opts.isNameField && describe.nameField) ||
+                (opts.isNillable && describe.nillable) ||
+                (opts.isUnique && describe.unique) ||
+                (opts.isUpdateable && describe.updateable) ||
                 opts.byDefault === 'all'
             ) {
-                result.push(it.name);
+                result.push(describe.name);
             }
-            if (it.type === 'reference' && it.relationshipName && opts.addParentField) {
-                result.push(
-                    ...opts.addParentField
-                        .filter(
-                            ({ relationshipName }) => it.relationshipName && localeCompareIgnoreCase(relationshipName, it.relationshipName)
-                        )
-                        .map((parent) => `${parent.relationshipName}.${parent.field}`)
-                );
+            if (describe.type === 'reference') {
+                if (opts.addParentField) {
+                    result.push(
+                        ...opts.addParentField
+                            .filter(
+                                ({ relationshipName }) =>
+                                    describe.relationshipName && localeCompareIgnoreCase(relationshipName, describe.relationshipName)
+                            )
+                            .map((parent) => `${describe.relationshipName}.${parent.field}`)
+                    );
+                }
+                if (opts.addRefField) {
+                    result.push(
+                        ...opts.addRefField
+                            .filter(({ referenceTo }) => describe.referenceTo?.some((test) => localeCompareIgnoreCase(test, referenceTo)))
+                            .map((parent) => `${describe.relationshipName}.${parent.field}`)
+                    );
+                }
             }
             return result;
         })

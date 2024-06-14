@@ -24,7 +24,10 @@ export async function loadConfig(exportFile: string): Promise<SfdmuConfig> {
 }
 
 export async function writeConfig(sfdmuDir: string, config: SfdmuConfig) {
-    await writeJson(path.join(sfdmuDir, 'export.json'), config);
+    const exportJson = path.join(sfdmuDir, 'export.json');
+    console.log('Writing SFDMU config: ', exportJson);
+    console.log(JSON.stringify(config, null, 2));
+    await writeJson(exportJson, config);
 }
 
 function parseObjectNameFromSoql(soql: string): string {

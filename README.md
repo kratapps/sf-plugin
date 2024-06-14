@@ -78,15 +78,16 @@ Generate SOQL.
 USAGE
   $ sf kratapps query generate -o <value> --object-name <value> [--json] [--by-default all|none] [--type-is <value>]
     [--type-is-not <value>] [--name-is <value>] [--name-is-not <value>] [--relationship-name-is <value>]
-    [--relationship-name-is-not <value>] [--add-parent-field <value>] [--is-auto-number] [--is-not-auto-number]
-    [--is-calculated] [--is-not-calculate] [--is-createable] [--is-not-createable] [--is-custom] [--is-not-custom]
-    [--is-encrypted] [--is-not-encrypted] [--is-external-id] [--is-not-external-id] [--is-name-field]
+    [--relationship-name-is-not <value>] [--add-parent-field <value>] [--add-ref-field <value>] [--is-auto-number]
+    [--is-not-auto-number] [--is-calculated] [--is-not-calculate] [--is-createable] [--is-not-createable] [--is-custom]
+    [--is-not-custom] [--is-encrypted] [--is-not-encrypted] [--is-external-id] [--is-not-external-id] [--is-name-field]
     [--is-not-name-field] [--is-nillable] [--is-not-nillable] [--is-unique] [--is-not-unique] [--is-updateable]
     [--is-not-updateable]
 
 FLAGS
   -o, --target-org=<value>                   (required) Username or alias of the target org.
       --add-parent-field=<value>...          todo
+      --add-ref-field=<value>...             todo
       --by-default=<option>                  [default: all] todo
                                              <options: all|none>
       --is-auto-number                       todo

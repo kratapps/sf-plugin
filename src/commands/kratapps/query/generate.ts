@@ -58,6 +58,10 @@ export default class KratappsQueryGenerate extends SfCommand<KratappsQueryGenera
             summary: messages.getMessage('flags.is-custom.summary'),
             multiple: true
         }),
+        'add-ref-field': Flags.string({
+            summary: messages.getMessage('flags.is-custom.summary'),
+            multiple: true
+        }),
         'is-auto-number': Flags.boolean({
             summary: messages.getMessage('flags.is-auto-number.summary')
         }),
@@ -125,47 +129,43 @@ export default class KratappsQueryGenerate extends SfCommand<KratappsQueryGenera
         const outputDir = 'data';
         const targetOrg = flags['target-org'];
         const objectName = flags['object-name'];
-        const addParentField = (flags['add-parent-field'] ?? []).map((it) => {
-            const invalidValue = 'Value for --add-parent-field must be as <relationshipName>.<parentFieldName>';
-            if (!it.includes('.')) {
-                throw Error(invalidValue);
-            }
-            const [relationshipName, field] = it.split('.');
-            return {
-                relationshipName,
-                field
-            };
-        });
-        const query = await generateQuery(targetOrg.getConnection(), objectName, outputDir, {
-            byDefault: flags['by-default'] === 'all' ? 'all' : 'none',
-            typeIs: flags['type-is'],
-            typeIsNot: flags['type-is-not'],
-            nameIs: flags['name-is'],
-            nameIsNot: flags['name-is-not'],
-            relationshipNameIs: flags['relationship-name-is'],
-            relationshipNameIsNot: flags['relationship-name-is-not'],
-            addParentField,
-            isAutoNumber: flags['is-auto-number'],
-            isNotAutoNumber: flags['is-not-auto-number'],
-            isCalculated: flags['is-calculated'],
-            isNotCalculated: flags['is-not-calculated'],
-            isCreateable: flags['is-createable'],
-            isNotCreateable: flags['is-not-createable'],
-            isCustom: flags['is-custom'],
-            isNotCustom: flags['is-not-custom'],
-            isEncrypted: flags['is-encrypted'],
-            isNotEncrypted: flags['is-not-encrypted'],
-            isExternalId: flags['is-external-id'],
-            isNotExternalId: flags['is-not-external-id'],
-            isNameField: flags['is-name-field'],
-            isNotNameField: flags['is-not-name-field'],
-            isNillable: flags['is-nillable'],
-            isNotNillable: flags['is-not-nillable'],
-            isUnique: flags['is-unique'],
-            isNotUnique: flags['is-not-unique'],
-            isUpdateable: flags['is-updateable'],
-            isNotUpdateable: flags['is-not-updateable']
-        });
+        const query = await generateQuery(
+            targetOrg.getConnection(),
+            objectName,
+            outputDir,
+            {
+                byDefault: flags['by-default'] === 'all' ? 'all' : 'none',
+                typeIs: flags['type-is'],
+                typeIsNot: flags['type-is-not'],
+                nameIs: flags['name-is'],
+                nameIsNot: flags['name-is-not'],
+                relationshipNameIs: flags['relationship-name-is'],
+                relationshipNameIsNot: flags['relationship-name-is-not'],
+                addParentField: parseParentField(flags['add-parent-field']),
+                addRefField: parseRefField(flags['add-ref-field']),
+                isAutoNumber: flags['is-auto-number'],
+                isNotAutoNumber: flags['is-not-auto-number'],
+                isCalculated: flags['is-calculated'],
+                isNotCalculated: flags['is-not-calculated'],
+                isCreateable: flags['is-createable'],
+                isNotCreateable: flags['is-not-createable'],
+                isCustom: flags['is-custom'],
+                isNotCustom: flags['is-not-custom'],
+                isEncrypted: flags['is-encrypted'],
+                isNotEncrypted: flags['is-not-encrypted'],
+                isExternalId: flags['is-external-id'],
+                isNotExternalId: flags['is-not-external-id'],
+                isNameField: flags['is-name-field'],
+                isNotNameField: flags['is-not-name-field'],
+                isNillable: flags['is-nillable'],
+                isNotNillable: flags['is-not-nillable'],
+                isUnique: flags['is-unique'],
+                isNotUnique: flags['is-not-unique'],
+                isUpdateable: flags['is-updateable'],
+                isNotUpdateable: flags['is-not-updateable']
+            },
+            false
+        );
         const queryString = query.toQueryString({ pretty: true });
         await writeFile(path.join(outputDir, objectName, 'query.soql'), queryString);
         return {
@@ -173,4 +173,32 @@ export default class KratappsQueryGenerate extends SfCommand<KratappsQueryGenera
             query: queryString
         };
     }
+}
+
+function parseParentField(values?: string[]) {
+    const splitter = '.';
+    return (values ?? []).map((it) => {
+        if (!it.includes(splitter)) {
+            throw Error(`Value for --add-parent-field must be as <relationshipName>${splitter}<parentFieldName>`);
+        }
+        const [relationshipName, field] = it.split(splitter);
+        return {
+            relationshipName,
+            field
+        };
+    });
+}
+
+function parseRefField(values?: string[]) {
+    const splitter = ':';
+    return (values ?? []).map((it) => {
+        if (!it.includes(splitter)) {
+            throw Error(`Value for --add-ref-field must be as <referenceTo>${splitter}<parentFieldName>`);
+        }
+        const [referenceTo, field] = it.split(splitter);
+        return {
+            referenceTo,
+            field
+        };
+    });
 }
