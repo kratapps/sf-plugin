@@ -17,7 +17,7 @@ interface Options {
 
 interface BackupConfig {
     objects: BackupObjectConfig[];
-    options?: GenerateQueryOptions;
+    queryOptions?: GenerateQueryOptions;
 }
 
 function ensureBackupConfig(value: unknown, message?: string): BackupConfig {
@@ -33,14 +33,14 @@ function isBackupConfig(value: unknown): value is BackupConfig {
         isObject(value) &&
         hasArray(value, 'objects') &&
         value.objects.every(isBackupObjectConfig) &&
-        (!has(value, 'options') || isGenerateQueryOptions(value.options))
+        (!has(value, 'queryOptions') || isGenerateQueryOptions(value.queryOptions))
     );
 }
 
 interface BackupObjectConfig {
     objectName: string;
     queryFile?: boolean | string;
-    options?: GenerateQueryOptions;
+    queryOptions?: GenerateQueryOptions;
 }
 
 function isBackupObjectConfig(value: unknown): value is BackupObjectConfig {
@@ -48,7 +48,7 @@ function isBackupObjectConfig(value: unknown): value is BackupObjectConfig {
         isPlainObject(value) &&
         hasString(value, 'objectName') &&
         (!has(value, 'queryFile') || hasBoolean(value, 'queryFile') || hasString(value, 'queryFile')) &&
-        (!has(value, 'options') || isGenerateQueryOptions(value.options))
+        (!has(value, 'queryOptions') || isGenerateQueryOptions(value.queryOptions))
     );
 }
 
@@ -79,7 +79,7 @@ export async function prepareBackup({ sfdmuDir, sourceDir, targetOrg, refreshSch
                 conn,
                 objectName,
                 sourceDir,
-                mergeGenerateQueryOptions(backupConfig.options, objectConfig.options),
+                mergeGenerateQueryOptions(backupConfig.queryOptions, objectConfig.queryOptions),
                 refreshSchema
             );
             queryString = query.toQueryString({ pretty: true });
