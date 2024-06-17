@@ -1,6 +1,6 @@
 import { Connection } from '@salesforce/core/lib/org/connection.js';
 import { DescribeSObjectResult } from 'jsforce/src/types/index.js';
-import { readJson, writeJson } from './fs.js';
+import { readJsonAs, writeJson } from './fs.js';
 import { Optional } from '@salesforce/ts-types';
 import { Field } from 'jsforce';
 import path from 'path';
@@ -12,7 +12,7 @@ export async function describeObject(
     objectName: string,
     opts: { outputDir: string; refreshSchema: boolean }
 ): Promise<DescribeSObjectResult> {
-    return describeByObjectName.get(objectName) ?? describeObjectCall(conn, objectName, opts);
+    return describeByObjectName.get(objectName) ?? (await describeObjectCall(conn, objectName, opts));
 }
 
 async function describeObjectCall(
@@ -32,7 +32,7 @@ async function describeObjectCall(
         return reload();
     }
     try {
-        const describe = await readJson<DescribeSObjectResult>(file);
+        const describe = await readJsonAs<DescribeSObjectResult>(file);
         describeByObjectName.set(objectName, describe);
         return describe;
     } catch (e) {
