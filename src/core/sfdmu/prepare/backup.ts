@@ -16,6 +16,7 @@ interface Options {
 
 export async function prepareBackup({ sfdmuDir, sourceDir, targetOrg, refreshSchema }: Options) {
     await ensureDir(sfdmuDir);
+    await emptyDir(sfdmuDir);
     const backupConfig = await loadBackupConfig(sourceDir);
     const sfdmuConfig: SfdmuConfig = {
         objects: []
@@ -51,6 +52,5 @@ export async function prepareBackup({ sfdmuDir, sourceDir, targetOrg, refreshSch
             externalId: 'Id'
         });
     }
-    await emptyDir(sfdmuDir);
     await writeConfig(sfdmuDir, sfdmuConfig);
 }

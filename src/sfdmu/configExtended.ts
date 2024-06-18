@@ -1,6 +1,6 @@
 import { ensure, has, hasArray, hasBoolean, hasString, isAnyJson, isBoolean, isJsonMap, Optional } from '@salesforce/ts-types';
-import { isSfdmuOperation, SfdmuObjectConfig, SfdmuOperation } from './config.js';
-import { fileExistsSync, readJson, readYaml } from '../utils/fs.js';
+import { isSfdmuOperation, SfdmuConfig, SfdmuObjectConfig, SfdmuOperation } from './config.js';
+import { fileExistsSync, readFileSync, readJson, readYaml } from '../utils/fs.js';
 import path from 'path';
 import { DecomposeConfig, isDecomposeConfig } from './decomposition.js';
 import { BackupObjectConfig } from './configBackup.js';
@@ -57,6 +57,22 @@ export async function loadConfigExtended(sourceDir: string): Promise<SfdmuConfig
         return ensureSfdmuConfigExtended(await readJson(jsonFile));
     }
     throw Error(`Config file not found: ${yamlFile}`);
+}
+
+export async function convertToSfdmuConfig(sourceDir: string, configExtended: SfdmuConfigExtended): Promise<SfdmuConfig> {
+    return {
+        ...configExtended,
+        objects: configExtended.objects.map((it) => {
+            const queryString = readFileSync(path.join(sourceDir, getObjectName(it), 'query.soql'));
+            const objectConfig: SfdmuObjectConfig = {
+                ...it,
+                query: queryString.replace(/\s+/g, ' ')
+            };
+            delete objectConfig.useDecomposition;
+            delete objectConfig.decompose;
+            return objectConfig;
+        })
+    };
 }
 
 export function getObjectName(config: SfdmuObjectConfig | SfdmuObjectConfigExtended | BackupObjectConfig): string {

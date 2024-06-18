@@ -1,6 +1,6 @@
 # summary
 
-Simplify data backups into git using the SFDMU plugin.
+BETA command. Simplify data backups into git using the SFDMU plugin.
 
 # description
 

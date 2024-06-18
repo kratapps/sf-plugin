@@ -15,6 +15,7 @@
 * [`sf kratapps remote deploy start`](#sf-kratapps-remote-deploy-start)
 * [`sf kratapps sfdmu csv2yaml`](#sf-kratapps-sfdmu-csv2yaml)
 * [`sf kratapps sfdmu prepare backup`](#sf-kratapps-sfdmu-prepare-backup)
+* [`sf kratapps sfdmu prepare export`](#sf-kratapps-sfdmu-prepare-export)
 * [`sf kratapps sfdmu yaml2csv`](#sf-kratapps-sfdmu-yaml2csv)
 
 ## `sf kratapps query generate`
@@ -217,6 +218,30 @@ FLAG DESCRIPTIONS
   -o, --target-org=<value>  Org to describe the objects.
 
     Required for query generation.
+```
+
+## `sf kratapps sfdmu prepare export`
+
+Simplify data exports using the SFDMU plugin.
+
+```
+USAGE
+  $ sf kratapps sfdmu prepare export [--json] [--sfdmu-dir <value>] [--source-dir <value>]
+
+FLAGS
+  --sfdmu-dir=<value>   [default: out] SFDMU root directory for generated script.
+  --source-dir=<value>  [default: data] Directory root with custom backup.yaml config.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Simplify data exports using the SFDMU plugin.
+
+  Prepares data export configuration for SFDMU plugin.
+
+EXAMPLES
+  $ sf kratapps sfdmu prepare export
 ```
 
 ## `sf kratapps sfdmu yaml2csv`
