@@ -236,7 +236,7 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
     ): Promise<void> {
         const { type, path, name, url, download_url: downloadUrl } = content;
         if (type === 'file' && downloadUrl) {
-            if (name.includes('.')) {
+            if (name.includes('.') && !name.endsWith('.test.js')) {
                 const fileNameWithoutExt = name.split('.')[0];
                 if (fileNameWithoutExt?.length) {
                     const pathParts = path.split('/');
@@ -259,10 +259,13 @@ export default class KratappsRemoteDeployStart extends SfCommand<KratappsRemoteD
     }
 
     private async visitFileFromGithubToSave(projectDir: string, content: RepositoryContent, token: Optional<string>): Promise<void> {
-        const { type, path, url, download_url: downloadUrl } = content;
+        const { type, path, name, url, download_url: downloadUrl } = content;
         if (type === 'file' && downloadUrl) {
-            this.info(path);
-            return saveFileFromGithub(join(projectDir, 'src', path), downloadUrl, token);
+            if (!name.endsWith('.test.js')) {
+                this.info(path);
+                return saveFileFromGithub(join(projectDir, 'src', path), downloadUrl, token);
+            }
+            return Promise.resolve();
         } else if (type === 'dir') {
             return this.saveFileFromGithubRecursive(projectDir, url, token);
         }
