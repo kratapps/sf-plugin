@@ -1,7 +1,7 @@
 {
   "name": "@kratapps/sf-plugin",
   "description": "kratapps.com",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "dependencies": {
     "@oclif/core": "^3.18.1",
     "@salesforce/core": "^6.5.1",
