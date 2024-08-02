@@ -37,10 +37,11 @@ export async function csv2yaml({ preserveExisting, sfdmuDir, sourceDir, targetOr
         const operation = hasString(objectConfig, 'operation') ? (objectConfig.operation as SfdmuOperation) : 'Readonly';
         const objectName = getObjectName(objectConfig);
         if (operations.includes(operation)) {
+            const csvFileName = ['User', 'Group'].includes(objectName) ? 'UserAndGroup' : objectName;
             await coreCsv2yaml({
                 preserveExisting,
                 externalId: externalId.split(';'),
-                csvFile: path.join(sfdmuDir, `${objectName}.csv`),
+                csvFile: path.join(sfdmuDir, `${csvFileName}.csv`),
                 objectName,
                 sourceDir,
                 targetOrg,
